@@ -2,6 +2,70 @@
 
 Reverse chronological. Newest on top.
 
+## 2026-11-16 — Code comments max 1-2 lines, in every repo (preference) — `style/comments`
+
+- What: No comment block longer than two lines — Woodpecker files, ansible templates, shell, Go. If it needs three lines it belongs in docs/.
+- Why/Context: User correction ("dont have too many comments... max just 1 or 2 lines. remember this"); extends the 2026-10-28 entry which only covered explanation density.
+- How/Apply: Trim while writing, not after; JSON templates get zero comments (invalid JSON broke Zot live).
+
+Source: user correction in CI session — explicit "remember this".
+
+## 2026-11-12 — CRA behind nginx 404s every deep route without `try_files` (gotcha) — `dev/frontend`
+
+- What: roots served `/` fine but 404'd `/deals`, `/tasks`, `/deals/123`. Its `location /` had only `root` + `index`, so any client-side route with no file on disk is a real 404. `error_page 404 /index.html` does **not** fix it — it rewrites the body but keeps the 404 status, so the SPA renders its own 404 page.
+- Why/Context: partner-app already had the fallback, which is why the two frontends behaved differently on the same stack. Next.js (investor-app-v2) is the opposite case: its 404s on `/deals` are **correct** — those routes do not exist in `src/pages`.
+- How/Apply: `try_files $uri $uri/ /index.html;` in `location /`; verify with `curl -o /dev/null -w '%{http_code}'` on deep routes **and** a real asset (`/favicon.ico`) to prove static files still win over the fallback.
+
+Source: s5 roots 2026-11-12 — every non-root route 404 until the fallback was added.
+
+## 2026-11-12 — Switching branches clobbers a tracked `.env` (gotcha) — `dev/git`
+
+- What: roots' `.env` was tracked on `main`. After untracking it on one branch and checking out `origin/main`, git wrote the **committed** version over the working file — silently reverting the per-stack URLs I had just deployed.
+- Why/Context: an untracked-but-present file is not "mine" to git; a checkout restores whatever the target tree says. `git stash push -- .env` also refused while the file's tracked status differed between branches.
+- How/Apply: copy the file to `/tmp`, `git checkout -f`, copy it back; and prefer untracking `.env` (gitignore + `git rm --cached`) so branch switches stop touching it. Always re-check deployed vs local values after a checkout.
+
+Source: s5 roots 2026-11-12 — local `.env` reverted to stage URLs, VM still correct.
+
+## 2026-11-12 — A dockerd restart reshuffles container IPs and silently wrecks the Redis cluster (gotcha) — `dev/phoenix`
+
+- What: `ansible-playbook ops/ops.yaml --tags base` fires the `restart docker` handler. All 25 s5 service containers stayed **exited** (the generated compose had no restart policy), and once started they died on `dial tcp 172.19.0.3:6379: connection refused` — because Redis cluster keeps **node IPs in its own topology**: after dockerd re-created the endpoints the nodes advertised stale addresses, and `.3` now belonged to mariadb.
+- Why/Context: cluster clients (go-redis `ClusterClient`, Redisson) ask the cluster for the topology and dial what it advertises, so a name that resolves correctly still fails. `cluster nodes` showed three divergent views (`172.19.0.3` as `myself` on one node, `fail?` on another, `noaddr` on the third).
+- How/Apply: repair with `cluster reset hard` on all nodes, then `redis-cli --cluster create <ip>:6379 ... --cluster-replicas 0 --cluster-yes` using the **current** `net-s<N>` IPs; then restart the dependants. Prevent it with a restart policy (now in the compose template) and, properly, static/announced IPs for the redis containers.
+
+Source: s5 regression 2026-11-12 — 30 containers, 12 panics, cluster rebuilt from 0 keys.
+
+## 2026-11-12 — `--tags base` is not a safe no-op on a live VM (gotcha) — `dev/phoenix`
+
+- What: the base role's docker-daemon handler restarts dockerd whenever `daemon.json` is newer than the running daemon, which stops every container on the VM.
+- Why/Context: it is idempotent for *config*, not for *availability*. `--check` cannot validate it either: check mode skips the command that registers the daemon JSON, so `from_json` fails on an empty string (pre-existing, not a swap bug).
+- How/Apply: warn before running `--tags base` on a shared VM; expect to `docker start $(docker ps -aq -f label=com.docker.compose.project=s<N> --filter status=exited)` afterwards, and check the redis cluster before trusting the stack.
+
+Source: same run — the play reported ok=41 changed=3 failed=0 while the stack was down.
+
+## 2026-11-12 — The installed `phoenix` binary lags the repo; verify with `strings` before blaming a service (gotcha) — `dev/phoenix`
+
+- What: karn booted with `Unknown command: appserver` because the installed 0.31.4 hardcodes `command: ["./main", "appserver"]`. The `PHOENIX_COMMAND` knob lived only in commits on unmerged branches (`release/ssync`, `release/java-env-override`), and a *newer* binary (`/tmp/phoenix-ultra2`) had a different one-line variant.
+- Why/Context: `remote-patch.sh` is embedded into the Go binary as an asset, so a repo edit changes nothing until you rebuild. `strings <bin> | grep COMMAND_ARG` (or `grep -m1 '<a comment from the asset>'`) tells you instantly whether the running binary can do what the repo says.
+- How/Apply: check the binary before debugging the app; build a throwaway (`cd cli && go build -o /tmp/phoenix-x ./cmd/phoenix`) rather than guessing, and keep the fix on a branch so the asset and the binary can't drift again.
+
+Source: s5 karn deploy 2026-11-12 — repo had no COMMAND_ARG, installed binary had none, /tmp copy had it.
+
+## 2026-11-12 — Redis cluster node format is dialect-specific (gotcha) — `dev/phoenix`
+
+- What: `*CLUSTERNODES` always emitted `redis://host:port,...`, which is Redisson's (Java) dialect. echo's go-redis `NewClusterClient` dials the string verbatim and panicked: `dial tcp: address redis://s5-redis-1:6379: too many colons in address`.
+- Why/Context: same suffix, two libraries. Java reads dotted `redis.cluster.nodes`, Go reads `REDISCLUSTER_CLUSTERNODES` (no dots) — and the patch normalises dots away, so the key name is the only discriminator left.
+- How/Apply: keep scheme URIs for the dotted key, bare `host:port` for everything else (`case "${K#*REDIS.CLUSTER*}" in`), and remember `DB_NAME` is forced from the merged .env under SLOT mode — a sibling service sharing a repo needs its own DB_NAME or it silently creates a service-named database.
+
+Source: s5 echo-consumer deploy 2026-11-12 — panic at storage/redis.go:30.
+
+## 2026-11-12 — A single CRA build eats 4G of swap; size swap for the build, not the steady state (gotcha) — `dev/phoenix`
+
+- What: deploying `partner-app` (CRA + node:16, `npm install && npm run build`) on vm2 dropped MemAvailable to **1417 MB** and consumed **all 4095 MB** of swap, load 2.84. No OOM kill, no container restart — swap alone absorbed it.
+- Why/Context: vm2 runs 22 JVMs on 15.6 GiB with ~3.3 GiB available at rest; a frontend build needs more headroom than the whole free pool. Same shape as the October freeze (build + 14 JVMs + zero swap = scheduler starvation).
+- How/Apply: 4 G swap minimum on build-capable VMs (declarative in `ansible/roles/base`); reclaim stale pages after with a guarded `swapoff/swapon` (only when available > swapped + 2 G); prefer `NODE_OPTIONS=--max-old-space-size=2048` so a runaway build fails fast instead of thrashing.
+
+Source: s5 partner-app deploy 2026-11-12 — /tmp/memwatch.log samples across the 3m41s build.
+
 ## 2026-11-10 — NetworkX traps: `common_neighbor_centrality` is CAR, and `set()` inside a comprehension (gotcha) — `dev/python`
 
 - What: `nx.common_neighbor_centrality(G, pairs, alpha=0)` is the **Cannistraci CAR index**, not plain CN — it is O(CN × neighbour-degree) per pair and hung a notebook for minutes on hub pairs. Plain CN = `len(list(nx.common_neighbors(G, u, v)))`. Separately, `[p for p in big_list if p in set(other)]` rebuilds the 67k set on *every* iteration and looks like a hang.
