@@ -157,9 +157,11 @@ in
         quickshell = unstable.quickshell;
 
         # VSCode 1.144 moved its bundled ripgrep (@vscode/ripgrep →
-        # @vscode/ripgrep-universal under node_modules.asar.unpacked), but the
-        # derivation still `rm`s the old path and dies. Satisfy that `rm` with a
-        # placeholder and point the new location at nixpkgs ripgrep instead.
+        # @vscode/ripgrep-universal under node_modules.asar.unpacked); nixpkgs has
+        # since reverted to 1.119.0, so both layouts exist in the wild. Satisfy the
+        # derivation's old-path `rm` with a placeholder either way, and point the
+        # new location at nixpkgs ripgrep only when that layout is present (and
+        # not already a symlink, in case upstream handles it first).
         # Drop when nixpkgs handles the new layout.
         vscode = prev.vscode.overrideAttrs (old: {
           prePatch = (old.prePatch or "") + ''
@@ -167,8 +169,11 @@ in
             touch resources/app/node_modules/@vscode/ripgrep/bin/rg
           '';
           postPatch = (old.postPatch or "") + ''
-            rm resources/app/node_modules.asar.unpacked/@vscode/ripgrep-universal/bin/linux-x64/rg
-            ln -s ${final.ripgrep}/bin/rg resources/app/node_modules.asar.unpacked/@vscode/ripgrep-universal/bin/linux-x64/rg
+            newRg=resources/app/node_modules.asar.unpacked/@vscode/ripgrep-universal/bin/linux-x64/rg
+            if [ -e "$newRg" ] && [ ! -L "$newRg" ]; then
+              rm "$newRg"
+              ln -s ${final.ripgrep}/bin/rg "$newRg"
+            fi
           '';
         });
       }
