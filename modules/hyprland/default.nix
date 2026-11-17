@@ -1,4 +1,4 @@
-# Dux Shell's stock Hyprland config is used as shipped; dms/*.lua fragments are seeded once because its Settings UI rewrites them.
+# Dux Shell's stock Hyprland config is used as shipped; dms/*.lua fragments track the repo default until its Settings UI edits them.
 { pkgs, user, ... }:
 let
   tokens = import ../../theme/tokens.nix;
@@ -91,8 +91,12 @@ in
         dms="''${XDG_CONFIG_HOME:-$HOME/.config}/hypr/dms"
         mkdir -p "$dms"
         for default in "$dms-defaults"/*; do
-          target="$dms/$(basename "$default")"
-          [ -e "$target" ] || install -m 644 "$default" "$target"
+          name=$(basename "$default")
+          target="$dms/$name" seeded="$dms/.seeded/$name"
+          if [ ! -e "$target" ] || { [ -e "$seeded" ] && cmp -s "$target" "$seeded"; }; then
+            install -m 644 "$default" "$target"
+            install -D -m 644 "$default" "$seeded"
+          fi
         done
       '';
     };

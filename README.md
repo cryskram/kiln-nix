@@ -1,6 +1,6 @@
 # kiln-nix
 
-Reproducible NixOS desktop and developer workstation: [Hyprland](https://hypr.land) with [Dux Shell](https://github.com/duxlabs-dev/dux-shell) (formerly DankMaterialShell), themed Gruvbox Dark, Wayland-only.
+Reproducible NixOS desktop and developer workstation: [Hyprland](https://hypr.land) with [Dux Shell](https://github.com/duxlabs-dev/dux-shell) (formerly DankMaterialShell), themed Everforest Dark, Wayland-only.
 
 ![NixOS](https://img.shields.io/badge/NixOS-26.05-blue?logo=nixos)
 ![Hyprland](https://img.shields.io/badge/compositor-Hyprland-d65d0e)
@@ -10,8 +10,8 @@ The Git repository is the single source of truth: clone it and rebuild on compat
 
 - **Compositor:** Hyprland 0.57 — dwindle, scrolling, master and monocle layouts, switchable live; Dux Shell's stock Lua config
 - **Shell:** Dux Shell — bar, launcher, control centre, notifications, lock, wallpapers, overview, display profiles
-- **Wallpapers:** 17 curated Gruvbox wallpapers, pinned by hash, in `~/Pictures/Wallpapers/gruvbox`
-- **Theme:** Gruvbox Dark from one set of tokens ([`theme/tokens.nix`](theme/tokens.nix))
+- **Wallpapers:** curated Everforest and Gruvbox collections, pinned by hash, in `~/Pictures/Wallpapers/<set>`
+- **Theme:** Everforest Dark from one set of tokens ([`theme/tokens.nix`](theme/tokens.nix)); palettes are swappable
 - **Login:** SDDM with the Astronaut theme
 - **Workstation:** devenv + direnv, Docker, language toolchains, pi and OpenCode coding agents
 

@@ -1,4 +1,4 @@
-# Claude Code status line mirroring the starship prompt (Gruvbox). Reads the session JSON on stdin.
+# Claude Code status line mirroring the starship prompt; SL_* colours come from theme/tokens.nix. Reads the session JSON on stdin.
 input=$(cat)
 cwd=$(jq -r '.workspace.current_dir // .cwd' <<<"$input")
 model=$(jq -r '.model.display_name // empty' <<<"$input")
@@ -6,8 +6,8 @@ used=$(jq -r '.context_window.used_percentage // empty' <<<"$input")
 
 c() { printf '\033[1;38;2;%sm' "$1"; }
 r=$'\033[0m'
-orange="254;128;25" blue="131;165;152" green="184;187;38"
-red="251;73;52" yellow="250;189;47" aqua="142;192;124"
+accent=$SL_ACCENT blue=$SL_BLUE green=$SL_GREEN
+red=$SL_RED yellow=$SL_YELLOW aqua=$SL_AQUA
 
 g() { git -C "$cwd" --no-optional-locks "$@" 2>/dev/null; }
 
@@ -18,10 +18,13 @@ else
   dir="${cwd/#$HOME/\~}"
   IFS=/ read -ra parts <<<"$dir"
   if ((${#parts[@]} > 3)); then
-    dir=$(IFS=/; echo "${parts[*]: -3}")
+    dir=$(
+      IFS=/
+      echo "${parts[*]: -3}"
+    )
   fi
 fi
-out="$(c "$orange")${dir}${r}"
+out="$(c "$accent")${dir}${r}"
 
 if [[ -n $root ]]; then
   branch=$(g branch --show-current || true)

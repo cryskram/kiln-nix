@@ -1,7 +1,9 @@
 { pkgs, ... }:
 let
-  p = (import ../theme/tokens.nix).palette;
-  p' = (import ../theme/tokens.nix).paletteNoHash;
+  tokens = import ../theme/tokens.nix;
+  p = tokens.palette;
+  p' = tokens.paletteNoHash;
+  accent = tokens.colors.accent-primary;
 
   bold = color: "bold ${color}";
   segment = color: {
@@ -40,10 +42,10 @@ in
     '';
     interactiveShellInit = ''
       set -g fish_greeting ""
-      set -g fish_color_command ${p'.orange-bright}
-      set -g fish_color_param ${p'.fg1}
-      set -g fish_color_quote ${p'.green-bright}
-      set -g fish_color_error ${p'.red-bright}
+      set -g fish_color_command ${tokens.hexNoHash accent}
+      set -g fish_color_param ${tokens.colorsNoHash.foreground}
+      set -g fish_color_quote ${p'.yellow}
+      set -g fish_color_error ${p'.red}
       set -g fish_history_max 10000
     '';
   };
@@ -56,21 +58,21 @@ in
       add_newline = true;
       format = "$directory$git_branch$git_status$git_metrics$nix_shell$direnv$container$golang$nodejs$python$rust$java$line_break$character";
       character = {
-        success_symbol = "[>](${bold p.orange-bright})";
-        error_symbol = "[>](${bold p.red-bright})";
-        vicmd_symbol = "[>](${bold p.blue-bright})";
+        success_symbol = "[>](${bold accent})";
+        error_symbol = "[>](${bold p.red})";
+        vicmd_symbol = "[>](${bold p.blue})";
       };
       directory = {
-        style = bold p.orange-bright;
+        style = bold accent;
         truncation_length = 3;
         truncate_to_repo = true;
       };
       git_branch = {
-        style = bold p.blue-bright;
-        format = "[\\($branch\\)](${bold p.blue-bright}) ";
+        style = bold p.blue;
+        format = "[\\($branch\\)](${bold p.blue}) ";
       };
       git_status = {
-        style = bold p.yellow-bright;
+        style = bold p.yellow;
         format = "([\\[$all_status$ahead_behind\\]]($style) )";
         stashed = "\\$";
         ahead = "⇡$count ";
@@ -84,22 +86,22 @@ in
       };
       git_metrics = {
         disabled = false;
-        added_style = bold p.green-bright;
-        deleted_style = bold p.red-bright;
+        added_style = bold p.green;
+        deleted_style = bold p.red;
         format = "([+$added]($added_style) )([-$deleted]($deleted_style) )";
       };
       nix_shell = {
         symbol = " ";
-        style = bold p.aqua-bright;
-        format = "[\\($symbol$state\\)](${bold p.aqua-bright}) ";
+        style = bold p.aqua;
+        format = "[\\($symbol$state\\)](${bold p.aqua}) ";
         impure_msg = "impure";
         pure_msg = "pure";
       };
       direnv = {
         disabled = false;
         symbol = " ";
-        style = bold p.purple-bright;
-        format = "[\\($symbol$loaded/$allowed\\)](${bold p.purple-bright}) ";
+        style = bold p.purple;
+        format = "[\\($symbol$loaded/$allowed\\)](${bold p.purple}) ";
         loaded_msg = "loaded";
         unloaded_msg = "not loaded";
         allowed_msg = "allowed";
@@ -107,26 +109,26 @@ in
       };
       container = {
         symbol = " ";
-        style = bold p.green-bright;
-        format = "[\\($symbol $name\\)](${bold p.green-bright}) ";
+        style = bold p.green;
+        format = "[\\($symbol $name\\)](${bold p.green}) ";
       };
       cmd_duration = {
         min_time = 2000;
-        format = "[took $duration](${bold p.red-bright}) ";
+        format = "[took $duration](${bold p.red}) ";
       };
-      golang = segment p.aqua-bright // {
+      golang = segment p.aqua // {
         symbol = " ";
       };
-      nodejs = segment p.green-bright // {
+      nodejs = segment p.green // {
         symbol = " ";
       };
-      python = segment p.yellow-bright // {
+      python = segment p.yellow // {
         symbol = " ";
       };
-      rust = segment p.red-bright // {
+      rust = segment p.red // {
         symbol = " ";
       };
-      java = segment p.purple-bright // {
+      java = segment p.purple // {
         symbol = " ";
       };
     };
@@ -135,7 +137,10 @@ in
   programs.fzf.enable = true;
   programs.zoxide.enable = true;
   programs.eza.enable = true;
-  programs.bat.enable = true;
+  programs.bat = {
+    enable = true;
+    config.theme = "base16";
+  };
   programs.fd.enable = true;
   programs.ripgrep.enable = true;
   programs.jq.enable = true;

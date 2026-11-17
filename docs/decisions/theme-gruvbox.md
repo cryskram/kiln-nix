@@ -1,6 +1,6 @@
 # Theme: Gruvbox Dark
 
-Date: 2026-11-17. Supersedes Catppuccin Macchiato as the global visual system
+Date: 2026-11-17. Superseded the same day by Everforest Dark (`theme-everforest.md`); it supersedes Catppuccin Macchiato as the global visual system
 (RICE §4, AGENTS §18).
 
 ## Alternatives considered

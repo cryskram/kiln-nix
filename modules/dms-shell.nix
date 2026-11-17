@@ -8,15 +8,14 @@
 }:
 let
   tokens = import ../theme/tokens.nix;
-  wallpapers = pkgs.callPackage ../theme/wallpapers.nix { };
+  wallpapers = import ../theme/wallpapers.nix { inherit (pkgs) fetchurl; };
   c = tokens.colors;
-  p = tokens.palette;
 
   theme = {
-    name = "Gruvbox Dark";
+    inherit (tokens) name;
     primary = c.accent-primary;
     primaryText = c.background-darkest;
-    primaryContainer = p.aqua-faded;
+    primaryContainer = c.accent-container;
     secondary = c.accent-secondary;
     surface = c.surface;
     surfaceText = c.foreground;
@@ -55,23 +54,31 @@ in
   };
 
   home-manager.users.${user} =
-    { config, ... }:
+    { config, lib, ... }:
     let
-      themeFile = "${config.xdg.configHome}/dms/themes/gruvbox-dark.json";
+      themeFile = "${config.xdg.configHome}/dms/themes/kiln.json";
     in
     {
-      xdg.configFile."dms/themes/gruvbox-dark.json".text = builtins.toJSON theme;
+      xdg.configFile."dms/themes/kiln.json".text = builtins.toJSON theme;
 
-      home.file = lib.listToAttrs (
-        map (w: lib.nameValuePair "Pictures/Wallpapers/gruvbox/${w.name}" { source = w.path; }) wallpapers
-      );
+      home.file = lib.concatMapAttrs (
+        set: walls:
+        lib.listToAttrs (
+          map (w: lib.nameValuePair "Pictures/Wallpapers/${set}/${w.name}" { source = w.path; }) walls
+        )
+      ) wallpapers;
 
-      home.activation.dmsSeedSettings = ''
+      home.activation.dmsSeedSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
         cfg="$HOME/.config/dms/settings.json"
+        jq=${pkgs.jq}/bin/jq
         if [ ! -f "$cfg" ]; then
           mkdir -p "$(dirname "$cfg")"
-          ${pkgs.jq}/bin/jq -n --arg file "${themeFile}" --arg icons "${tokens.icons.name}" \
+          $jq -n --arg file "${themeFile}" --arg icons "${tokens.icons.name}" \
             '{ currentThemeName: "custom", customThemeFile: $file, iconThemeDark: $icons }' > "$cfg"
+        elif [ "$($jq -r '.currentThemeName' "$cfg")" = custom ] \
+          && [ ! -e "$($jq -r '.customThemeFile // ""' "$cfg")" ]; then
+          $jq --arg file "${themeFile}" --arg icons "${tokens.icons.name}" \
+            '.customThemeFile = $file | .iconThemeDark = $icons' "$cfg" > "$cfg.tmp" && mv "$cfg.tmp" "$cfg"
         fi
       '';
 

@@ -23,7 +23,7 @@ in
       delta = {
         line-numbers = true;
         navigate = true;
-        syntax-theme = "gruvbox-dark";
+        syntax-theme = "base16";
         paging = "never";
       };
       pager = {

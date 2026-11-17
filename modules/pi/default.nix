@@ -8,6 +8,7 @@ let
   piPackages = import ../../pi/packages.nix { inherit pkgs; };
   piLens = pkgs.callPackage ../../pkgs/pi-lens.nix { };
   jevRouter = ../../pi/extensions/jev-router.ts;
+  tokens = import ../../theme/tokens.nix;
   home = config.users.users.${user}.home;
 
   subagentContext = {
@@ -58,7 +59,7 @@ in
       defaultProvider = "opencode-go";
       defaultModel = "auto";
       defaultThinkingLevel = "high";
-      theme = "gruvbox-dark";
+      theme = tokens.pi;
       defaultTools = [ "+codemode" ];
       extensions = [ "-builtin:mcp" ];
 

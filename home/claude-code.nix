@@ -1,5 +1,19 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
+  tokens = import ../theme/tokens.nix;
+  rgb =
+    hex:
+    lib.concatMapStringsSep ";" (i: toString (lib.fromHexString (builtins.substring i 2 hex))) [
+      1
+      3
+      5
+    ];
+
   learnings = "${config.home.homeDirectory}/kiln-nix/pi/skills/learnings";
 
   statusline = pkgs.writeShellApplication {
@@ -11,6 +25,14 @@ let
       gnugrep
       coreutils
     ];
+    runtimeEnv = lib.mapAttrs (_: rgb) {
+      SL_ACCENT = tokens.colors.accent-primary;
+      SL_BLUE = tokens.palette.blue;
+      SL_GREEN = tokens.palette.green;
+      SL_RED = tokens.palette.red;
+      SL_YELLOW = tokens.palette.yellow;
+      SL_AQUA = tokens.palette.aqua;
+    };
     text = builtins.readFile ./scripts/claude-statusline.sh;
   };
 in

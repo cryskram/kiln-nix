@@ -1,4 +1,7 @@
 { pkgs, ... }:
+let
+  inherit (import ../theme/tokens.nix) nvim;
+in
 {
   programs.neovim = {
     enable = true;
@@ -43,7 +46,7 @@
           { import = "plugins" },
         },
         defaults = { lazy = false, version = false },
-        install = { colorscheme = { "gruvbox", "habamax" } },
+        install = { colorscheme = { "${nvim.colorscheme}", "habamax" } },
         checker = { enabled = false },
         performance = {
           rtp = { disabled_plugins = { "gzip", "tarPlugin", "tohtml", "tutor", "zipPlugin" } },
@@ -54,13 +57,16 @@
     "nvim/lua/plugins/colorscheme.lua".text = ''
       return {
         {
-          "ellisonleao/gruvbox.nvim",
-          name = "gruvbox",
-          opts = { contrast = "hard", transparent_mode = false },
+          "${nvim.repo}",
+          lazy = false,
+          priority = 1000,
+          config = function()
+            ${nvim.setup}
+          end,
         },
         {
           "LazyVim/LazyVim",
-          opts = { colorscheme = "gruvbox" },
+          opts = { colorscheme = "${nvim.colorscheme}" },
         },
       }
     '';

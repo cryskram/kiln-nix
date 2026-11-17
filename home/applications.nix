@@ -20,12 +20,12 @@ let
 
   highlights = with palette; [
     orange
-    blue-bright
-    yellow-bright
-    purple-bright
-    aqua-bright
-    green-bright
-    red-bright
+    blue
+    yellow
+    purple
+    aqua
+    green
+    red
   ];
   letters = lib.stringToCharacters "abcdefghijklmnopqrstuvwxyz";
 
@@ -38,7 +38,7 @@ let
     text_highlight_color = rgb colors.accent-primary;
     search_highlight_color = rgb colors.warning;
     link_highlight_color = rgb colors.info;
-    synctex_highlight_color = rgb palette.purple-bright;
+    synctex_highlight_color = rgb palette.purple;
     visual_mark_color = "${rgb colors.accent-primary} 0.22 0.22";
     status_bar_color = rgb colors.background-darkest;
     status_bar_text_color = rgb colors.foreground;
