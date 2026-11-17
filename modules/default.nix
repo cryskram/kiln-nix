@@ -1,0 +1,19 @@
+{
+  imports = [
+    ./nix.nix
+    ./core.nix
+    ./pi
+    ./dms-shell.nix
+    ./theme.nix
+    ./shell.nix
+    ./niri.nix
+    ./sddm.nix
+    ./docker.nix
+    ./ollama.nix
+    ./direnv.nix
+    ./vpn.nix
+    ./tailscale.nix
+    ./ssh.nix
+    ./android.nix
+  ];
+}

@@ -419,7 +419,6 @@ Suggested structure:
 dev/
 ├── README.md
 ├── shared/
-│   ├── common.nix
 │   ├── go.nix
 │   ├── node.nix
 │   ├── java.nix

@@ -8,6 +8,4 @@
     golangci-lint
     gotools
   ];
-  # services.postgres.enable = true;
-  # services.redis.enable = true;
 }

@@ -1,45 +1,27 @@
-# Niri user configuration (Home Manager).
-#
-# Phase 1 (Niri foundation): ship niri's stock default config (complete,
-# sane keybinds) plus a few foundation-level overrides below.
-#
-# Note: Home Manager release-26.05 does not yet ship a
-# `wayland.windowManager.niri` module, so the config file is written
-# directly. It is validated at build time by the `niri-config-validate`
-# flake check (`nix flake check`).
-{
-  pkgs,
-  ...
-}:
+{ pkgs, ... }:
 let
-  tokens = import ../theme/tokens.nix;
+  inherit (import ../theme/tokens.nix) colors;
 in
 {
   xdg.configFile."niri/config.kdl".text = ''
-    // Managed by ~/niri-desktop (home/niri.nix). Local edits will be overwritten.
-    // The default config is included first so our overrides take precedence.
     include "${pkgs.niri.src}/resources/default-config.kdl"
 
-    // Prefer Niri-drawn decorations over client-side (removes GTK header-bar borders).
     prefer-no-csd
+    screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
-    // No "Important Hotkeys" pop-up at every login.
     hotkey-overlay {
         skip-at-startup
     }
 
-    // --- Phase 3 skeleton overrides ---
-
-    // Wallpaper is owned by DMS (its wallpaper service). No swaybg fallback here:
-    // two layers setting the background produced flicker (RICE §18).
-
-    // Desktop scale — override the default config's example scale 2.
     output "eDP-1" {
         scale 1.15
     }
 
-    // Rings for every window — active vs inactive distinct (so you always know focus).
-    // Border is always visible; focus-ring disabled to avoid double ring.
+    output "HDMI-A-1" {
+        mode "2560x1440@59.951"
+        scale 1.0
+    }
+
     layout {
         gaps 8
         focus-ring {
@@ -47,22 +29,13 @@ in
         }
         border {
             width 2
-            active-color "${tokens.colors.accent-primary}"
-            inactive-color "${tokens.colors.border}"
-            urgent-color "${tokens.colors.error}"
+            active-color "${colors.accent-primary}"
+            inactive-color "${colors.border}"
+            urgent-color "${colors.error}"
         }
     }
 
-    // Rounded windows + less gaps: feat engineered, soft futuristic (RICE §18-19)
-    // draw-border-with-background false: by default niri paints the border as a
-    // solid rectangle *behind* the window, which shows straight through a
-    // semitransparent window and makes it look tinted instead of translucent.
-    // With it off, the border is drawn around the window instead.
-    //
-    // Glass: every window is subtly translucent and blurred. Blur is only
-    // visible where there is transparency, so the opacity and the background
-    // effect belong together. 0.95 keeps text contrast intact while letting the
-    // wallpaper tint through.
+    // Without draw-border-with-background false, the border fill tints translucent windows.
     window-rule {
         geometry-corner-radius 12
         clip-to-geometry true
@@ -73,7 +46,6 @@ in
             blur true
         }
 
-        // Pop-up menus (context menus, dropdowns) get the same treatment.
         popups {
             background-effect {
                 blur true
@@ -81,34 +53,12 @@ in
         }
     }
 
-    // Terminal glass — blur behind Ghostty.
-    // Ghostty only implements background blur on macOS and KDE Plasma (no
-    // ext-background-effect support), so the blur is requested from the niri
-    // side instead. The window still has to be semitransparent or the blur is
-    // hidden behind opaque pixels; that comes from ghostty background-opacity.
-    // Xray blur is on by default whenever another background effect is active.
-    //
-    // Rules are applied in order and later ones override earlier ones, so
-    // opacity 1.0 here cancels the generic 0.95 above: niri multiplies its own
-    // opacity on top of the window's, and ghostty already asks for 0.82.
     window-rule {
         match app-id=r#"^com\.mitchellh\.ghostty$"#
-
         opacity 1.0
-
-        background-effect {
-            blur true
-        }
     }
 
-    // Glass for layer-shell surfaces that cannot ask for it themselves.
-    //
-    // DMS requests blur for its own surfaces through ext-bg-effect-v1, which niri
-    // implements — so no layer rule is needed for the bar or its popouts. Adding
-    // one double-applies: niri blurs the whole surface rectangle, which shows up as
-    // a blurred, tinted box around rounded popouts. Blur is toggled in DMS itself
-    // (Settings → Personalization → Theme & Colors). That leaves only the fuzzel
-    // fallback launcher, which cannot ask for blur itself.
+    // DMS requests blur itself via ext-background-effect; only fuzzel needs a layer rule.
     layer-rule {
         match namespace=r#"^launcher$"#
 
@@ -117,36 +67,24 @@ in
         }
     }
 
-    // Multi-monitor — HDMI-A-1 Samsung 2560x1440 (auto-right of eDP by default, RICE §28)
-    output "HDMI-A-1" {
-        mode "2560x1440@59.951"
-        scale 1.0
-        // position is auto by default (extend); toggle via Mod+M uses temporary niri msg output
-    }
-
-    // Terminal — ghostty (RICE §19).
-    // UX — clipboard, screenshots, recording, DMS panels (RICE §26-27, §7)
     binds {
         "Mod+T" { spawn "ghostty"; }
         "Mod+Return" { spawn "ghostty"; }
-        "Mod+Slash" { spawn "sh" "-c" "dms ipc call spotlight toggle 2>/dev/null || fuzzel"; }
-        "Mod+D" { spawn "sh" "-c" "dms ipc call spotlight toggle 2>/dev/null || fuzzel"; } // keep legacy Mod+D
-        "Mod+Ctrl+V" { spawn "sh" "-c" "dms ipc call clipboard toggle 2>/dev/null"; }
-        "Mod+Ctrl+C" { spawn "sh" "-c" "dms ipc call control-center toggle 2>/dev/null"; }
-        "Mod+P" { spawn "sh" "-c" "dms ipc call powermenu toggle 2>/dev/null || wlogout"; }
-        "Super+Alt+L" { spawn "sh" "-c" "dms ipc call lock lock 2>/dev/null || swaylock"; }
-        "Mod+Shift+S" { spawn "sh" "-c" "dms screenshot"; }
-        "Print" { spawn "sh" "-c" "dms screenshot full"; }
-        "Mod+Shift+R" { spawn "sh" "-c" "wf-recorder -g \"$(slurp -o)\" -f ~/Videos/recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"; }
+        "Mod+D" { spawn-sh "dms ipc call spotlight toggle || fuzzel"; }
+        "Mod+Slash" { spawn-sh "dms ipc call spotlight toggle || fuzzel"; }
+        "Mod+Ctrl+V" { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
+        "Mod+Ctrl+C" { spawn "dms" "ipc" "call" "control-center" "toggle"; }
+        "Mod+P" { spawn-sh "dms ipc call powermenu toggle || wlogout"; }
+        "Super+Alt+L" { spawn-sh "dms ipc call lock lock || swaylock"; }
+        "Mod+Shift+S" { spawn "dms" "screenshot"; }
+        "Print" { spawn "dms" "screenshot" "full"; }
+        "Mod+Shift+R" { spawn-sh "wf-recorder -g \"$(slurp -o)\" -f ~/Videos/recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"; }
         "Mod+Shift+E" { spawn "wlogout"; }
         "Mod+M" { spawn "niri-display-toggle"; }
         "Mod+Shift+M" { spawn "niri-display-toggle"; }
-        "Mod+Shift+1" { spawn "sh" "-c" "niri-display-toggle 1"; }
-        "Mod+Shift+2" { spawn "sh" "-c" "niri-display-toggle 2"; }
+        "Mod+Shift+1" { spawn "niri-display-toggle" "1"; }
+        "Mod+Shift+2" { spawn "niri-display-toggle" "2"; }
         "Mod+Shift+N" { spawn "vpn-toggle"; }
     }
-
-    // Predictable screenshot location.
-    screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
   '';
 }

@@ -1,19 +1,4 @@
-# pi-lens — LSP / lint / format / structural feedback for pi.
-#
-# Pinned from the npm tarball rather than the GitHub tag: the published package
-# ships the compiled `dist/`, bundled tree-sitter grammars, rules and skills,
-# while the repo's source needs `npm run prepare` (tsc + grammar download + git
-# hooks) that a sandbox must not run.
-#
-# Runtime deps come from the registry (FOD, network allowed):
-#   --omit=dev    skips jest/typescript and friends
-#   --omit=peer   required — the peers (typebox, @earendil-works/pi-*) are
-#                 supplied by the pi host and must not be installed here
-#   --ignore-scripts  upstream `prepare` is a build step, not a runtime need
-#
-# No `bin/` is installed: dist/mcp/*.js import host-provided
-# @earendil-works/pi-tui, so the CLIs only run inside a pi host. The extension
-# (and its bundled skill) is the deliverable.
+# The npm tarball ships prebuilt dist/grammars; the tag's lockfile pins dependencies so the output hash is stable.
 {
   lib,
   stdenvNoCC,
@@ -29,9 +14,6 @@ let
     hash = "sha256-CW7PWQBzEnTCofetJSSeTvU6o6ys8SkUb3LZ6tsGVuo=";
   };
 
-  # The published tarball omits package-lock.json, but the tag has one. Without
-  # it `npm install` re-resolved the ^ ranges on every build, so an upstream
-  # patch release changed node_modules and broke the fixed-output hash.
   lock = fetchurl {
     url = "https://raw.githubusercontent.com/apmantza/pi-lens/v${version}/package-lock.json";
     hash = "sha256-dPKzIpMiJ60N/14RQ28BHpQxRbpQuCn9sx5gKGpy5d8=";
@@ -51,8 +33,6 @@ let
     dontFixup = true;
     sourceRoot = "package";
 
-    # `npm ci` against the upstream lockfile: same versions every build, so the
-    # hash only changes when the pinned release itself changes.
     buildPhase = ''
       runHook preBuild
       export HOME="$TMPDIR"
@@ -66,9 +46,7 @@ let
       runHook preInstall
       mkdir -p $out
       cp -r node_modules/. $out/
-      # npm stamps install-time mtimes and NAR hashes include them, so without
-      # this every rebuild (or a new npm patch release) changes the hash even
-      # though the file *contents* are identical. Clamp everything to @1.
+      # npm stamps install-time mtimes, which would otherwise change the NAR hash on every build.
       find $out -exec touch -h -d @1 {} +
       runHook postInstall
     '';

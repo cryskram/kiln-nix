@@ -1,10 +1,17 @@
-# Shell — fish + Starship + modern CLI (RICE §20) — Gruvbox Dark
-# Fast, Wayland-friendly, awesome fish. Gruvbox warm palette.
 { pkgs, ... }:
+let
+  p = (import ../theme/tokens.nix).palette;
+  p' = (import ../theme/tokens.nix).paletteNoHash;
+
+  bold = color: "bold ${color}";
+  segment = color: {
+    style = bold color;
+    format = "[\\($symbol$version\\)](${bold color}) ";
+  };
+in
 {
   programs.fish = {
     enable = true;
-    # Interactive helpers: vi-mode off (emacs), fast completions
     shellAbbrs = {
       g = "git";
       gs = "git status -sb";
@@ -18,74 +25,52 @@
       find = "fd";
       zed = "zeditor";
     };
-    shellAliases = {
-      # keep abbreviations + aliases compatible with fish
-      cat = "bat";
-      grep = "rg";
-      find = "fd";
-    };
-    functions = {
-      # Full-width markdown. glow word-wraps at a fixed `width` (its default is 80,
-      # and the old imperative config pinned exactly that) on a terminal that is
-      # usually twice as wide. Feed it the live column count instead, so the wrap
-      # follows the window and survives monitor changes. An explicit -w/--width
-      # wins, and bare `glow` (file browser) and `-t/--tui` are passed through.
-      glow = ''
-        if test (count $argv) -eq 0
-            command glow $argv
-            return
-        end
-        if contains -- -w $argv; or string match -qr '^--width|^-t$|^--tui$' -- $argv
-            command glow $argv
-            return
-        end
-        set -l cols (tput cols 2>/dev/null)
-        if test -z "$cols"
-            command glow $argv
-            return
-        end
-        command glow -w $cols $argv
-      '';
-    };
+    # glow wraps at a fixed width; follow the live terminal width unless one is given.
+    functions.glow = ''
+      if test (count $argv) -eq 0; or contains -- -w $argv; or string match -qr '^--width|^-t$|^--tui$' -- $argv
+          command glow $argv
+          return
+      end
+      set -l cols (tput cols 2>/dev/null)
+      if test -z "$cols"
+          command glow $argv
+      else
+          command glow -w $cols $argv
+      end
+    '';
     interactiveShellInit = ''
       set -g fish_greeting ""
-      # Gruvbox Dark palette for fish (bright variants: terminal legibility)
-      set -g fish_color_command fe8019
-      set -g fish_color_param ebdbb2
-      set -g fish_color_quote b8bb26
-      set -g fish_color_error fb4934
-      # history
+      set -g fish_color_command ${p'.orange-bright}
+      set -g fish_color_param ${p'.fg1}
+      set -g fish_color_quote ${p'.green-bright}
+      set -g fish_color_error ${p'.red-bright}
       set -g fish_history_max 10000
-      # zoxide + fzf keybinds are handled by HM integrations below
-      # ensure starship transients work
     '';
-    plugins = [
-      # bass not needed — direnv handles env via fish integration
-    ];
   };
+
+  xdg.configFile."fish/completions/phoenix.fish".source = ./fish/completions/phoenix.fish;
 
   programs.starship = {
     enable = true;
-    enableFishIntegration = true;
     settings = {
       add_newline = true;
       format = "$directory$git_branch$git_status$git_metrics$nix_shell$direnv$container$golang$nodejs$python$rust$java$line_break$character";
       character = {
-        success_symbol = "[>](bold #c6a0f6)";
-        error_symbol = "[>](bold #ed8796)";
-        vicmd_symbol = "[>](bold #8aadf4)";
+        success_symbol = "[>](${bold p.orange-bright})";
+        error_symbol = "[>](${bold p.red-bright})";
+        vicmd_symbol = "[>](${bold p.blue-bright})";
       };
       directory = {
-        style = "bold #c6a0f6";
+        style = bold p.orange-bright;
         truncation_length = 3;
         truncate_to_repo = true;
       };
       git_branch = {
-        style = "bold #8aadf4";
-        format = "[\($branch\)](bold #8aadf4) ";
+        style = bold p.blue-bright;
+        format = "[\\($branch\\)](${bold p.blue-bright}) ";
       };
       git_status = {
-        style = "bold #eed49f";
+        style = bold p.yellow-bright;
         format = "([\\[$all_status$ahead_behind\\]]($style) )";
         stashed = "\\$";
         ahead = "⇡$count ";
@@ -99,22 +84,22 @@
       };
       git_metrics = {
         disabled = false;
-        added_style = "bold #a6da95";
-        deleted_style = "bold #ed8796";
+        added_style = bold p.green-bright;
+        deleted_style = bold p.red-bright;
         format = "([+$added]($added_style) )([-$deleted]($deleted_style) )";
       };
       nix_shell = {
         symbol = " ";
-        style = "bold #91d7e3";
-        format = "[\($symbol$state\)](bold #91d7e3) ";
+        style = bold p.aqua-bright;
+        format = "[\\($symbol$state\\)](${bold p.aqua-bright}) ";
         impure_msg = "impure";
         pure_msg = "pure";
       };
       direnv = {
         disabled = false;
         symbol = " ";
-        style = "bold #f5a97f";
-        format = "[\($symbol$loaded/$allowed\)](bold #f5a97f) ";
+        style = bold p.purple-bright;
+        format = "[\\($symbol$loaded/$allowed\\)](${bold p.purple-bright}) ";
         loaded_msg = "loaded";
         unloaded_msg = "not loaded";
         allowed_msg = "allowed";
@@ -122,51 +107,33 @@
       };
       container = {
         symbol = " ";
-        style = "bold #a6da95";
-        format = "[\($symbol $name\)](bold #a6da95) ";
+        style = bold p.green-bright;
+        format = "[\\($symbol $name\\)](${bold p.green-bright}) ";
       };
       cmd_duration = {
         min_time = 2000;
-        format = "[took $duration](bold #ed8796) ";
+        format = "[took $duration](${bold p.red-bright}) ";
       };
-      golang = {
+      golang = segment p.aqua-bright // {
         symbol = " ";
-        style = "bold #91d7e3";
-        format = "[\($symbol$version\)](bold #91d7e3) ";
       };
-      nodejs = {
+      nodejs = segment p.green-bright // {
         symbol = " ";
-        style = "bold #a6da95";
-        format = "[\($symbol$version\)](bold #a6da95) ";
       };
-      python = {
+      python = segment p.yellow-bright // {
         symbol = " ";
-        style = "bold #eed49f";
-        format = "[\($symbol$version\)](bold #eed49f) ";
       };
-      rust = {
+      rust = segment p.red-bright // {
         symbol = " ";
-        style = "bold #ed8796";
-        format = "[\($symbol$version\)](bold #ed8796) ";
       };
-      java = {
+      java = segment p.purple-bright // {
         symbol = " ";
-        style = "bold #f5a97f";
-        format = "[\($symbol$version\)](bold #f5a97f) ";
       };
     };
   };
 
-  programs.fzf = {
-    enable = true;
-    enableFishIntegration = true;
-  };
-
-  programs.zoxide = {
-    enable = true;
-    enableFishIntegration = true;
-  };
-
+  programs.fzf.enable = true;
+  programs.zoxide.enable = true;
   programs.eza.enable = true;
   programs.bat.enable = true;
   programs.fd.enable = true;
@@ -174,44 +141,15 @@
   programs.jq.enable = true;
   programs.lazygit.enable = true;
 
-  # Custom fish completions pinned in the repo. Phoenix (company CLI) lives at
-  # ~/.local/bin/phoenix — a locally built binary, not a Nix package — so its fish
-  # completion script is generated once and committed here:
-  #   phoenix completion fish > home/fish/completions/phoenix.fish
-  #
-  # The script is cobra's dynamic shim: it shells out to `phoenix __complete` at
-  # completion time (result cached per completion), so it embeds no command names
-  # — nothing internal lands in this public repo — and it does not go stale as the
-  # CLI grows. Regenerate only if cobra's script template changes.
-  # Fish loads everything under ~/.config/fish/completions/ at startup.
-  xdg.configFile."fish/completions/phoenix.fish".source = ./fish/completions/phoenix.fish;
-
-  # ~/.local/bin first on PATH. `home.sessionPath` prepends, which is what
-  # `~/.local/bin` conventionally expects, and Home Manager exports it through
-  # hm-session-vars so fish picks it up too. (xdg.localBinInPath is the other
-  # option, but it appends and needs xdg.enable, which is off here.)
   home.sessionPath = [ "$HOME/.local/bin" ];
 
-  # glow's config, declarative now (it used to be an app-owned file in ~/.config
-  # that pinned `width: 80` — half of a 160-column terminal).
-  # Width is deliberately absent: glow reads this file statically, so a fixed
-  # value can never follow the window. The `glow` fish function above passes the
-  # live column count with -w, and a -w flag overrides whatever this file says.
-  # (`width: 0` here is NOT "no wrap" — glow treats a zero config width as unset
-  # and falls back to 80; only `-w 0` on the command line disables wrapping.)
+  # Width is deliberately unset: the glow function above passes the live terminal width.
   xdg.configFile."glow/glow.yml".text = ''
-    # style name or JSON path (default "auto")
     style: "auto"
-    # mouse support (TUI-mode only)
     mouse: false
-    # use pager to display markdown
     pager: false
-    # show all files, including hidden and ignored.
     all: false
   '';
 
-  home.packages = with pkgs; [
-    yq-go
-    fish
-  ];
+  home.packages = [ pkgs.yq-go ];
 }

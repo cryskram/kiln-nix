@@ -1,13 +1,4 @@
-# Zed — fast GPU editor (DEV_ENVIRONMENT Phase 3)
-# fish + direnv + devenv friendly; Zed theme is user-owned (see docs/figma.md
-# and ~/.config/zed/settings.json — no Gruvbox theme ships built in).
 { pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    zed-editor
-  ];
-
-  # Zed settings are *not* managed here — user owns ~/.config/zed/settings.json
-  # (so themes/extensions persist). Example defaults are in docs/zed-settings.json.example
-  home.sessionVariables.EDITOR = "nvim"; # keep nvim as $EDITOR, zed as GUI
+  home.packages = [ pkgs.zed-editor ];
 }

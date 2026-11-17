@@ -1,38 +1,31 @@
-# Spicetify — Spotify Gruvbox Dark (DEV, RICE §4)
-# Uses spicetify-nix (follows nixpkgs) for declarative theming.
-{ pkgs, spicetify-nix, ... }:
+{ inputs, pkgs, ... }:
 let
-  spicePkgs = spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+  spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+  c = (import ../theme/tokens.nix).colorsNoHash;
 in
 {
-
   programs.spicetify = {
     enable = true;
-    # Theme: text + Gruvbox Dark palette
     theme = spicePkgs.themes.text;
     colorScheme = "custom";
     customColorScheme = {
-      text = "ebdbb2";
-      subtext = "d5c4a1";
-      sidebarText = "ebdbb2";
-      main = "282828";
-      sidebar = "1d2021";
-      player = "282828";
-      card = "3c3836";
-      shadow = "1d2021";
-      selectedRow = "504945";
-      button = "d65d0e";
-      buttonActive = "d65d0e";
-      buttonDisabled = "665c54";
-      tabActive = "d65d0e";
-      notification = "d65d0e";
-      notificationError = "fb4934";
-      misc = "665c54";
+      text = c.foreground;
+      subtext = c.foreground-muted;
+      sidebarText = c.foreground;
+      main = c.background;
+      sidebar = c.background-darkest;
+      player = c.background;
+      card = c.surface;
+      shadow = c.shadow;
+      selectedRow = c.surface-elevated;
+      button = c.accent-primary;
+      buttonActive = c.accent-primary;
+      buttonDisabled = c.surface-hover;
+      tabActive = c.accent-primary;
+      notification = c.accent-primary;
+      notificationError = c.error;
+      misc = c.surface-hover;
     };
-    enabledExtensions = with spicePkgs.extensions; [
-      shuffle
-      # add more: adblock, hidePodcasts, etc. as needed
-    ];
-    # Keep Spotify features like local files disabled for simplicity
+    enabledExtensions = [ spicePkgs.extensions.shuffle ];
   };
 }

@@ -1,10 +1,4 @@
-#!/usr/bin/env bash
-# Import the live Chrome Figma session into figma-linux's cookie jar.
-#
-# Why: figma-linux 0.11.5's "Login with browser" redeem writes only
-# `figma.session`, but current Figma also requires the `__Host-figma.authn*`
-# family, so the app keeps a cookie it cannot use and bounces to /login.
-# Chrome already holds a complete, working set. See docs/figma.md.
+# figma-linux's browser login stores only figma.session, but Figma also needs __Host-figma.authn*; copy Chrome's set (docs/figma.md).
 set -euo pipefail
 
 CFG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/figma-linux"
@@ -41,7 +35,6 @@ done
 [[ -f "$APP_DB" ]] || { echo "error: figma-linux profile not found at $APP_DB" >&2; exit 1; }
 [[ -f "$CHROME_DB" ]] || { echo "error: Chrome cookie DB not found at $CHROME_DB" >&2; exit 1; }
 
-# The cookie DB is only safe to rewrite with the app stopped.
 if pgrep -f "figma[-]linux/resources/app" >/dev/null; then
   if [[ $KILL -eq 1 ]]; then
     echo "stopping figma-linux..."
@@ -57,8 +50,6 @@ if pgrep -f "figma[-]linux/resources/app" >/dev/null; then
   fi
 fi
 
-# Chrome encrypts its cookies with the keyring secret (Linux libsecret backend).
-# The value never leaves this script and is never printed.
 CHROME_SECRET="$(secret-tool lookup application chrome 2>/dev/null || true)"
 if [[ -z "$CHROME_SECRET" ]]; then
   cat >&2 <<'EOF'
@@ -77,7 +68,6 @@ if [[ $DRY -eq 0 ]]; then
   echo "backed up: $BACKUP"
 fi
 
-# Decrypt in a temp copy so a live Chrome (WAL) cannot corrupt the read.
 TMPDIR_IMPORT="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_IMPORT"' EXIT
 cp "$CHROME_DB" "$TMPDIR_IMPORT/Cookies"
@@ -98,11 +88,10 @@ iv = b" " * 16
 
 
 def unseal(blob):
-    """AES-128-CBC for v10/v11 cookies; returns raw plaintext bytes."""
     if not blob:
         return None
     if blob[:3] not in (b"v10", b"v11"):
-        return blob  # stored in the clear
+        return blob
     out = subprocess.run(
         ["openssl", "enc", "-d", "-aes-128-cbc", "-K", key.hex(), "-iv", iv.hex(), "-nopad"],
         input=blob[3:], capture_output=True,
@@ -115,13 +104,8 @@ def unseal(blob):
     return out
 
 
+# Chrome >= 127 prefixes values with SHA256(host_key); try both forms and keep whichever decodes to printable text.
 def to_text(raw):
-    """Chrome>=127 prepends SHA256(host_key) to the value, older builds do not.
-
-    Both forms are tried and validity decides: the stripped form wins only if it
-    decodes to printable text. Guessing from the first byte is wrong because a
-    host-hash byte is frequently printable ASCII.
-    """
     for cand in ([raw[32:], raw] if len(raw) > 32 else [raw]):
         try:
             text = cand.decode("utf-8")

@@ -1,43 +1,106 @@
-# Desktop skeleton services (Home Manager).
-#
-# Phase 3: launcher, notifications, wallpaper, lock, terminal.
-# DMS provides the shell (bar, panels, launcher, notifications, wallpaper, lock)
-# via modules/dms-shell.nix — theme/noctalia-*.json and the old noctalia luau
-# plugin were replaced by theme/dms-gruvbox.json (Gruvbox Dark).
-{
-  ...
-}:
+{ pkgs, ... }:
 let
   tokens = import ../theme/tokens.nix;
+  inherit (tokens) colors fonts;
+  cn = tokens.colorsNoHash;
+
+  lock = "${pkgs.dux-shell}/bin/dms ipc call lock lock || ${pkgs.swaylock}/bin/swaylock -f";
+  niri = "${pkgs.niri}/bin/niri";
 in
 {
-  # Launcher — fuzzel (Wayland-native, keyboard-first, matches niri default Mod+D)
-  programs.fuzzel.enable = true;
-
-  # Lock screen — swaylock (referenced by niri default Super+Alt+L)
-  # PAM is configured at system level (modules/niri.nix). Themed Gruvbox.
-  programs.swaylock.enable = true;
-  programs.swaylock.settings = {
-    color = tokens.colorsNoHash.background;
-    inside-color = tokens.colorsNoHash.surface;
-    ring-color = tokens.colorsNoHash.border;
-    inside-clear-color = tokens.colorsNoHash.surface;
-    ring-clear-color = tokens.colorsNoHash.info;
-    inside-ver-color = tokens.colorsNoHash.surface;
-    ring-ver-color = tokens.colorsNoHash.warning;
-    inside-wrong-color = tokens.colorsNoHash.surface;
-    ring-wrong-color = tokens.colorsNoHash.error;
-    key-hl-color = tokens.colorsNoHash.accent-primary;
-    bs-hl-color = tokens.colorsNoHash.error;
-    text-color = tokens.colorsNoHash.foreground;
-    layout-bg-color = tokens.colorsNoHash.background-deep;
-    separator-color = "00000000";
+  programs.ghostty = {
+    enable = true;
+    settings = {
+      font-family = fonts.mono;
+      font-size = fonts.size.md;
+      background = colors.background-darkest;
+      foreground = colors.foreground;
+      cursor-color = colors.cursor;
+      cursor-text = colors.background-darkest;
+      selection-background = colors.selectionBg;
+      selection-foreground = colors.selectionFg;
+      palette = builtins.genList (i: "${toString i}=${builtins.elemAt colors.ansi i}") 16;
+      # Ghostty cannot blur under niri; the blur comes from niri's window-rule (home/niri.nix).
+      background-opacity = 0.82;
+      background-blur = 32;
+      unfocused-split-opacity = 1;
+      window-decoration = false;
+      window-padding-x = 12;
+      window-padding-y = 12;
+      copy-on-select = "clipboard";
+    };
   };
 
-  # Terminal — ghostty only (RICE §19) — Gruvbox, blur/glass via the DMS theme
-  programs.ghostty.enable = true;
+  programs.fuzzel = {
+    enable = true;
+    settings = {
+      main = {
+        font = "${fonts.ui}:size=${toString fonts.size.sm}";
+        line-height = 18;
+        horizontal-pad = 12;
+        vertical-pad = 8;
+        inner-pad = 8;
+        layer = "overlay";
+      };
+      colors = {
+        background = "${cn.background}d9";
+        text = "${cn.foreground}ff";
+        match = "${cn.accent-primary}ff";
+        selection = "${cn.surface-elevated}cc";
+        selection-text = "${cn.foreground}ff";
+        border = "${cn.border}99";
+      };
+      border = {
+        width = 1;
+        radius = 12;
+      };
+    };
+  };
 
-  # Wallpaper is owned by DMS (its wallpaper service, see modules/dms-shell.nix).
-  # swaybg used to be spawned by niri as a solid fallback; two wallpaper sources
-  # fought over the background, so it is no longer installed or spawned.
+  programs.swaylock = {
+    enable = true;
+    settings = {
+      color = cn.background;
+      inside-color = cn.surface;
+      ring-color = cn.border;
+      inside-clear-color = cn.surface;
+      ring-clear-color = cn.info;
+      inside-ver-color = cn.surface;
+      ring-ver-color = cn.warning;
+      inside-wrong-color = cn.surface;
+      ring-wrong-color = cn.error;
+      key-hl-color = cn.accent-primary;
+      bs-hl-color = cn.error;
+      text-color = cn.foreground;
+      layout-bg-color = cn.background-deep;
+      separator-color = "00000000";
+    };
+  };
+
+  services.swayidle = {
+    enable = true;
+    events.before-sleep = "sh -c '${lock}'";
+    timeouts = [
+      {
+        timeout = 300;
+        command = "sh -c '${lock}'";
+      }
+      {
+        timeout = 305;
+        command = "${niri} msg action power-off-monitors";
+        resumeCommand = "${niri} msg action power-on-monitors";
+      }
+    ];
+  };
+
+  home.packages = with pkgs; [
+    networkmanagerapplet
+    wl-clipboard
+    grim
+    slurp
+    satty
+    wf-recorder
+    wlogout
+    wl-mirror
+  ];
 }

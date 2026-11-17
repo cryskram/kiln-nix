@@ -1,19 +1,4 @@
-# Official Bruno MCP server (@usebruno/mcp) — lets pi discover, inspect and run
-# the Bruno API collections on disk.
-#
-# Not published on npm and the repo has no tags, so this pins main HEAD and
-# rebuilds on the next explicit bump only.
-#
-# Deliberately NOT pkgs.buildNpmPackage: 23 lockfile entries (notably the
-# @usebruno/* family and `yaml`) carry no `resolved` URL, so the offline
-# install that buildNpmPackage prepares fails with ENOTCACHED however the
-# prefetcher is configured. Fixed-output derivations may use the network, so
-# this follows the repo's own `withDeps` pattern (pi/packages.nix) and runs a
-# plain `npm ci` instead.
-#
-# Execution (`execute_request`, `run_collection`) shells out to `@usebruno/cli`
-# (pinned 4.0.0 in the server's own dependencies) resolved from its own
-# node_modules — no separate bru CLI package is needed.
+# Unpublished on npm and its lockfile lacks `resolved` URLs, so dependencies come from a fixed-output `npm ci`.
 {
   lib,
   stdenvNoCC,
@@ -32,8 +17,6 @@ let
     hash = "sha256-DOLAgFE6RgBeQ+WR/XdiLKB5nNWT43rY3JqxZwJKelM=";
   };
 
-  # Full install including dev dependencies: typescript is needed to build and
-  # jest to run the repo's own suite. Same shape as `withDeps`, minus --omit.
   nodeModules = stdenvNoCC.mkDerivation {
     pname = "bruno-mcp-node-modules";
     inherit version src;
@@ -77,8 +60,6 @@ stdenvNoCC.mkDerivation {
     runHook postBuild
   '';
 
-  # The repo's own jest suite: a broken upstream pin fails the build instead of
-  # failing at MCP call time.
   doCheck = true;
   checkPhase = ''
     runHook preCheck

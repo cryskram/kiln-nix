@@ -1,19 +1,17 @@
-# SDDM + Astronaut — login screen per RICE §25 (Gruvbox desktop accent)
-# Futuristic, technical, GUI-based, shows NixOS/hostname/kernel/session/network/time
-{
-  pkgs,
-  ...
-}:
+{ pkgs, ... }:
+let
+  inherit (import ../theme/tokens.nix) cursor;
+in
 {
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
-    theme = "sddm-astronaut-theme";
     package = pkgs.kdePackages.sddm;
-    # Cursor visible on login — keep astronaut theme, just add cursor (merge, don't replace Theme)
-    settings.Theme.CursorTheme = "Bibata-Modern-Classic";
-    settings.Theme.CursorSize = 24;
-    # QtMultimedia/gst needed by sddm-astronaut (video background, effects) — fixes "QtMultimedia not found" error
+    theme = "sddm-astronaut-theme";
+    settings.Theme = {
+      CursorTheme = cursor.name;
+      CursorSize = cursor.size;
+    };
     extraPackages = with pkgs; [
       bibata-cursors
       kdePackages.qtmultimedia
@@ -26,10 +24,5 @@
     ];
   };
 
-  # Ensure SDDM can show the greeter on Wayland via cage (handled by sddm-astronaut's Main.qml)
-  # No extra services needed — sddm-astronaut handles its own QML rendering.
-
-  environment.systemPackages = with pkgs; [
-    sddm-astronaut
-  ];
+  environment.systemPackages = [ pkgs.sddm-astronaut ];
 }

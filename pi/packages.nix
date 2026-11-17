@@ -1,15 +1,6 @@
-# Third-party pi extensions, pinned as Nix derivations.
-#
-# pi loads an extension from a path; a directory is resolved through the
-# `pi.extensions` field of its package.json. Extensions that import bare
-# modules outside pi's bundled set (typebox, @earendil-works/*) need their own
-# node_modules, so those get one built from the upstream registry.
-#
-# Wired into pi via `programs.pi.coding-agent.extensions` in modules/core.nix.
+# Third-party pi extensions. Lockfiles are not used because their `resolved` entries lack integrity hashes.
 { pkgs }:
 let
-  # Extension with no runtime dependencies beyond pi's bundled modules:
-  # ship the source tree as-is (pi loads TypeScript directly).
   plain =
     {
       pname,
@@ -33,11 +24,6 @@ let
       meta.description = "pi extension: ${pname}";
     };
 
-  # node_modules fetched straight from the registry as a fixed-output
-  # derivation, pinned by `hash`. The upstream lockfiles carry `resolved`
-  # entries without `integrity` (nested dev dependencies of
-  # @earendil-works/pi-coding-agent), which nixpkgs' lockfile parser rejects,
-  # so the lockfile is not used. `--omit=dev` keeps only runtime dependencies.
   nodeModules =
     {
       pname,
@@ -75,8 +61,6 @@ let
       '';
     };
 
-  # Extension with npm runtime dependencies: ship the source tree plus the
-  # fetched node_modules, so pi resolves the dependencies next to the extension.
   withDeps =
     {
       pname,
@@ -84,7 +68,6 @@ let
       src,
       npmHash,
       npmFlags ? [ ],
-      # Subdirectory holding the extension, for monorepo sources.
       subdir ? ".",
     }:
     pkgs.runCommand "${pname}-${version}"
@@ -109,9 +92,6 @@ let
           }
         }/node_modules $out/node_modules
       '';
-  # Both rpiv extensions ship from the same monorepo release and need only their
-  # own workspace installed (a sibling @juicesharp/rpiv-config plus the i18n
-  # peer). typebox and @earendil-works/* come from pi's bundled modules.
   rpivExtension =
     {
       pname,
@@ -120,10 +100,6 @@ let
     }:
     withDeps {
       inherit pname npmHash subdir;
-      # v2.12.0 moves typebox to peerDependencies:"*" — fixes pi's
-      # "Host-provided extension packages must be declared in
-      # peerDependencies with a '*' range" loader warning (v2.11.0 declared
-      # it as a regular dependency and tripped the stricter check).
       version = "2.15.0";
       src = pkgs.fetchFromGitHub {
         owner = "juicesharp";
@@ -134,30 +110,24 @@ let
       npmFlags = [
         "--omit=dev"
         "--legacy-peer-deps"
-        # Monorepo: install only this workspace, not every sibling's deps.
         "--include-workspace-root=false"
         "--workspace=@juicesharp/${pname}"
       ];
     };
 in
 {
-  # Structured questionnaires the model can put to you.
   rpiv-ask-user-question = rpivExtension {
     pname = "rpiv-ask-user-question";
     npmHash = "sha256-nHuFs+It4nKmGx1GzXViitP5yQ+c8FCnarv0cZS7qug=";
     subdir = "packages/rpiv-ask-user-question";
   };
 
-  # Todo list for the model, rendered as a live overlay that survives /reload
-  # and conversation compaction.
   rpiv-todo = rpivExtension {
     pname = "rpiv-todo";
     npmHash = "sha256-1uNyUxg2Jz4taMRSfxcormBCKEb1RkGoGrg4udXs9EA=";
     subdir = "packages/rpiv-todo";
   };
 
-  # /btw — parallel side conversation in a real pi sub-session, usable while
-  # the main agent is still running. Imports only pi's bundled modules.
   pi-btw = plain {
     pname = "pi-btw";
     version = "0.8.1";
@@ -167,19 +137,10 @@ in
       tag = "v0.8.1";
       hash = "sha256-9jRpvNJEshd+p9+KDVzoPPtnVTvca71qFKd8fvF1DbI=";
     };
-    # /btw:summarize builds a tool-free child with no extensions, so a virtual
-    # model (our `auto` router) cannot be routed there and streaming dies with
-    # "Virtual model … must be routed before streaming". Loads btw.json sources
-    # for that child too; tools stay empty. Drop when upstream fixes it.
+    # /btw:summarize cannot route the virtual `auto` model without extensions; drop once upstream fixes it.
     patches = [ ../patches/pi-btw-summarize-router.patch ];
   };
 
-  # Starship-style statusline + opencode-style TUI (owns the footer).
-  # zentui — replaces pi-powerline-footer. No npm deps (plain, ships TS source
-  # pi loads directly; peers satisfied by host). Configure via `/zentui` at
-  # runtime → ~/.pi/agent/zentui.json (components/styles/modelLabel).
-  # NOTE: its footer defaults to `starship` mode — harmless now that
-  # pi-powerline is gone; use `/zentui` to switch footer style if needed.
   zentui = plain {
     pname = "pi-zentui";
     version = "0.34.0";
@@ -191,8 +152,6 @@ in
     };
   };
 
-  # pi-subagents — async child agents (scout/researcher/oracle/worker/reviewer).
-  # Generic for any project: no niri-desktop specific code, works in any cwd.
   pi-subagents = withDeps {
     pname = "pi-subagents";
     version = "0.88.1";
@@ -208,13 +167,6 @@ in
     ];
   };
 
-  # pi-web-access — web search / fetch / source_check for researcher + evidence-auditor.
-  # Runs alongside MCP without clashing: the adapter exposes its own namespace
-  # (`mcp` proxy tool → veridb today), while pi-web-access owns web_search,
-  # fetch_content, source_check and get_search_content. Search is keyless via Exa.
-  # Answer/summary models are pinned to a concrete provider in
-  # ~/.pi/agent/web-search.json (declared in modules/core.nix) because the default
-  # The virtual `auto` router cannot be streamed directly.
   pi-web-access = withDeps {
     pname = "pi-web-access";
     version = "0.48.0";
@@ -230,13 +182,6 @@ in
     ];
   };
 
-  # pi-guard — permission gate for tool calls: bash commands parsed as an AST
-  # (so `sudo rm -rf`, `bash -c '…'` and `find -exec rm` are caught, unlike a
-  # regex blocklist), file-path globs for read/write/edit, and whole-tool rules
-  # for everything else. The policy lives declaratively under `settings.guard`
-  # in modules/core.nix — quiet by default, denying/prompting only on
-  # destructive operations, which is the opposite of upstream's ask-everything
-  # defaults (and of its ask-unknown-tools fallback).
   pi-guard = withDeps {
     pname = "pi-guard";
     version = "1.6.0";
@@ -252,11 +197,6 @@ in
     ];
   };
 
-  # MCP client for pi. Loading this extension replaces pi's built-in MCP support
-  # (see settings.extensions = [ "-builtin:mcp" ] in modules/core.nix): one `mcp`
-  # proxy tool instead of one tool per MCP tool, servers connected lazily and
-  # stopped after idling, OAuth tokens in the OS keychain. It reads the same
-  # mcp.json files the built-in does, so server declarations did not move.
   mcp-adapter = withDeps {
     pname = "pi-mcp-adapter";
     version = "7.0.1";
@@ -267,8 +207,6 @@ in
       hash = "sha256-OyHd9Se7HDjbu8K668Q8/Z+sq83apfqHoKn72N8PBqg=";
     };
     npmHash = "sha256-lVLycrcyVm2+rVrsBFKIackiAdScqweNGxyOdCorgKg=";
-    # Runtime deps come from the registry (typebox included, so the host-provided
-    # peer needs no suppression). --omit=dev only, never --legacy-peer-deps.
     npmFlags = [
       "--omit=dev"
     ];

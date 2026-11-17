@@ -8,7 +8,6 @@ Structure per `DEV_ENVIRONMENT.md` §12:
 dev/
 ├── README.md
 ├── shared/          # reusable devenv fragments (language stacks)
-│   ├── common.nix
 │   ├── go.nix
 │   ├── node.nix
 │   ├── java.nix

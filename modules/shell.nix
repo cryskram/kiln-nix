@@ -1,8 +1,5 @@
-# System shell — fish as login shell (RICE §20)
-{ pkgs, ... }:
+{ pkgs, user, ... }:
 {
   programs.fish.enable = true;
-  users.users.vageesh.shell = pkgs.fish;
-  # Ensure fish is in /etc/shells
-  environment.shells = with pkgs; [ fish ];
+  users.users.${user}.shell = pkgs.fish;
 }
