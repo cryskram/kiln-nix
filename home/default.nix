@@ -8,6 +8,7 @@
     ./files.nix
     ./scripts.nix
     ./git.nix
+    ./ssh.nix
     ./development.nix
     ./applications.nix
     ./spicetify.nix
