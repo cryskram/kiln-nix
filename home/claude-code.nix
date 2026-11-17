@@ -1,5 +1,7 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
+  learnings = "${config.home.homeDirectory}/kiln-nix/pi/skills/learnings";
+
   statusline = pkgs.writeShellApplication {
     name = "claude-statusline";
     runtimeInputs = with pkgs; [
@@ -49,6 +51,11 @@ in
 
     context = ''
       - Never add Co-Authored-By trailers or "Generated with Claude Code" lines to commits or PRs.
+      - Journal: use the `learnings` skill (${learnings}/LEARNINGS.md). Read it at session start; append one entry per its SKILL.md whenever the user corrects you, states a preference, or you hit a non-obvious gotcha.
+      - Have a sense of humor: dry, quick, well-timed. A good line beats a forced one, and jokes never replace substance or bury bad news.
     '';
   };
+
+  # Live link, not a store copy: LEARNINGS.md is append-only and shared with pi.
+  home.file.".claude/skills/learnings".source = config.lib.file.mkOutOfStoreSymlink learnings;
 }
