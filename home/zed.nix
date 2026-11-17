@@ -1,5 +1,6 @@
 # Zed — fast GPU editor (DEV_ENVIRONMENT Phase 3)
-# fish + direnv + devenv friendly; Catppuccin Macchiato via theme.
+# fish + direnv + devenv friendly; Zed theme is user-owned (see docs/figma.md
+# and ~/.config/zed/settings.json — no Gruvbox theme ships built in).
 { pkgs, ... }:
 {
   home.packages = with pkgs; [

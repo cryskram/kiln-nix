@@ -14,7 +14,7 @@
 { lib, pkgs, ... }:
 let
   tokens = import ../theme/tokens.nix;
-  themeFile = "/home/vageesh/.config/dms/themes/catppuccin-macchiato.json";
+  themeFile = "/home/vageesh/.config/dms/themes/gruvbox-dark.json";
 in
 {
   # Still `programs.dms-shell`: this repo takes the NixOS module from stable
@@ -35,7 +35,7 @@ in
     enableVPN = true; # glib + NetworkManager
 
     # Installed but disabled at runtime (DMS_DISABLE_MATUGEN below): the rice is a
-    # fixed Catppuccin Macchiato scheme, not wallpaper-derived.
+    # fixed Gruvbox Dark scheme, not wallpaper-derived.
     enableDynamicTheming = true;
   };
 
@@ -70,11 +70,11 @@ in
       fi
     '';
 
-    xdg.configFile."dms/themes/catppuccin-macchiato.json".source = ../theme/dms-macchiato.json;
+    xdg.configFile."dms/themes/gruvbox-dark.json".source = ../theme/dms-gruvbox.json;
 
     # Seed the shell's own config, never overwriting it: it rewrites settings.json
     # from its UI, so only absent values get filled — the theme on a fresh install,
-    # and the icon theme (Tela-circle purple, from home/theme.nix).
+    # and the icon theme (Tela-circle orange, from home/theme.nix).
     home.activation.dmsSeedSettings = ''
       cfg="$HOME/.config/dms/settings.json"
       mkdir -p "$(dirname "$cfg")"
@@ -82,10 +82,14 @@ in
         printf '%s\n' '{ "currentThemeName": "custom", "customThemeFile": "${themeFile}" }' > "$cfg"
       fi
       tmp="$cfg.tmp"
-      # `//=` fills an absent value; the equality test migrates the value this
-      # module seeded before (Papirus-Dark) without touching a UI-made choice.
+      # `//=` fills an absent value; the equality tests migrate values this module
+      # seeded before (Papirus-Dark, then Tela-circle purple) without touching a
+      # UI-made choice.
       if ${pkgs.jq}/bin/jq --arg name "${tokens.icons.name}" '
-           .iconThemeDark = (if (.iconThemeDark // "Papirus-Dark") == "Papirus-Dark" then $name else .iconThemeDark end)
+           .iconThemeDark = (
+             if ((.iconThemeDark // "Papirus-Dark") == "Papirus-Dark")
+                or ((.iconThemeDark // "") == "Tela-circle-purple-dark")
+             then $name else .iconThemeDark end)
          ' "$cfg" > "$tmp" 2>/dev/null; then
         mv "$tmp" "$cfg"
       else

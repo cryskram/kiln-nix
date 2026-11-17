@@ -1,5 +1,5 @@
-# Shell — fish + Starship + modern CLI (RICE §20) — Catppuccin Macchiato
-# Fast, Wayland-friendly, awesome fish. Macchiato mauve palette.
+# Shell — fish + Starship + modern CLI (RICE §20) — Gruvbox Dark
+# Fast, Wayland-friendly, awesome fish. Gruvbox warm palette.
 { pkgs, ... }:
 {
   programs.fish = {
@@ -49,11 +49,11 @@
     };
     interactiveShellInit = ''
       set -g fish_greeting ""
-      # Catppuccin Macchiato palette for fish
-      set -g fish_color_command c6a0f6
-      set -g fish_color_param cad3f5
-      set -g fish_color_quote a6da95
-      set -g fish_color_error ed8796
+      # Gruvbox Dark palette for fish (bright variants: terminal legibility)
+      set -g fish_color_command fe8019
+      set -g fish_color_param ebdbb2
+      set -g fish_color_quote b8bb26
+      set -g fish_color_error fb4934
       # history
       set -g fish_history_max 10000
       # zoxide + fzf keybinds are handled by HM integrations below

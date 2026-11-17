@@ -2,10 +2,9 @@
 #
 # Phase 3: launcher, notifications, wallpaper, lock, terminal.
 # DMS provides the shell (bar, panels, launcher, notifications, wallpaper, lock)
-# via modules/dms-shell.nix — theme/noctalia-macchiato.json and the old noctalia
-# luau plugin were replaced by theme/dms-macchiato.json.
+# via modules/dms-shell.nix — theme/noctalia-*.json and the old noctalia luau
+# plugin were replaced by theme/dms-gruvbox.json (Gruvbox Dark).
 {
-  pkgs,
   ...
 }:
 let
@@ -16,7 +15,7 @@ in
   programs.fuzzel.enable = true;
 
   # Lock screen — swaylock (referenced by niri default Super+Alt+L)
-  # PAM is configured at system level (modules/niri.nix). Themed Macchiato.
+  # PAM is configured at system level (modules/niri.nix). Themed Gruvbox.
   programs.swaylock.enable = true;
   programs.swaylock.settings = {
     color = tokens.colorsNoHash.background;
@@ -35,7 +34,7 @@ in
     separator-color = "00000000";
   };
 
-  # Terminal — ghostty only (RICE §19) — Macchiato, blur/glass via the DMS theme
+  # Terminal — ghostty only (RICE §19) — Gruvbox, blur/glass via the DMS theme
   programs.ghostty.enable = true;
 
   # Wallpaper is owned by DMS (its wallpaper service, see modules/dms-shell.nix).

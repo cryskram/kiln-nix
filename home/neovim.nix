@@ -33,7 +33,7 @@
     ];
   };
 
-  # LazyVim config — bootstrap + Macchiato touches
+  # LazyVim config — bootstrap + gruvbox touches
   xdg.configFile."nvim/init.lua".text = ''
     -- Managed by ~/niri-desktop/home/neovim.nix — LazyVim starter
     -- Bootstrap lazy.nvim from nix (fallback to git if not found)
@@ -59,27 +59,27 @@
         { import = "plugins" },
       },
       defaults = { lazy = false, version = false },
-      install = { colorscheme = { "catppuccin", "habamax" } },
+      install = { colorscheme = { "gruvbox", "habamax" } },
       checker = { enabled = false },
       performance = { rtp = { disabled_plugins = { "gzip", "tarPlugin", "tohtml", "tutor", "zipPlugin" } } },
     })
   '';
 
-  # Minimal LazyVim overrides — keep Macchiato, ensure lazyvim.plugins loads
+  # Minimal LazyVim overrides — keep gruvbox, ensure lazyvim.plugins loads
   xdg.configFile."nvim/lua/config/lazy.lua".text = ''
     return {
       defaults = { lazy = true },
-      install = { colorscheme = { "catppuccin" } },
+      install = { colorscheme = { "gruvbox" } },
       checker = { enabled = false },
     }
   '';
 
-  xdg.configFile."nvim/lua/plugins/catppuccin.lua".text = ''
+  xdg.configFile."nvim/lua/plugins/gruvbox.lua".text = ''
     return {
       {
-        "catppuccin/nvim",
-        name = "catppuccin",
-        opts = { flavour = "macchiato", transparent_background = false },
+        "ellisonleao/gruvbox.nvim",
+        name = "gruvbox",
+        opts = { contrast = "hard", transparent_mode = false },
       },
     }
   '';
@@ -88,7 +88,7 @@
     return {
       {
         "LazyVim/LazyVim",
-        opts = { colorscheme = "catppuccin" },
+        opts = { colorscheme = "gruvbox" },
       },
     }
   '';

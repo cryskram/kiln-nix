@@ -11,17 +11,16 @@
       init.defaultBranch = "main";
       pull.rebase = false;
       core.editor = "nvim";
-      # delta renders diffs in Catppuccin Macchiato (syntax-theme below).
+      # delta renders diffs in gruvbox (syntax-theme below).
       core.pager = "delta";
       interactive.diffFilter = "delta --color-only";
       delta = {
         line-numbers = true;
         navigate = true;
         # Delta hands the name to bat, which matches the exact display name
-        # ("Catppuccin Macchiato"); the kebab form makes bat fall back with
-        # "[bat warning]: Unknown theme 'catppuccin-macchiato'" and deltas
-        # render uncolored.
-        syntax-theme = "Catppuccin Macchiato";
+        # ("gruvbox-dark"); bat ships it as a built-in theme. The kebab form is
+        # what bat actually calls it, so this one needs no extra theme file.
+        syntax-theme = "gruvbox-dark";
         # Keep paging inside terminal apps (pi, tmux-like panes, herdr).
         paging = "never";
       };
@@ -79,7 +78,7 @@
 
   home.packages = with pkgs; [
     git-lfs
-    # Diff/merge pager — colored Macchiato diffs (wired via core.pager above).
+    # Diff/merge pager — colored gruvbox diffs (wired via core.pager above).
     delta
   ];
 }

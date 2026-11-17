@@ -1,71 +1,70 @@
-# Centralized design tokens — Catppuccin Macchiato
-# Single source of truth per RICE §4. Derived via catppuccin/nix + manual tokens.
+# Centralized design tokens — Gruvbox Dark (medium contrast)
+# Single source of truth per RICE §4. Values from the canonical gruvbox palette;
+# warm sepia base with orange as the accent.
 rec {
   colors = {
-    # Base
-    background = "#24273a"; # base
-    background-deep = "#1e2030"; # mantle
-    background-darkest = "#181926"; # crust
-    surface = "#363a4f"; # surface0
-    surface-elevated = "#494d64"; # surface1
-    surface-hover = "#5b6078"; # surface2
-    surface-active = "#5b6078";
+    # Base — gruvbox bg0/bg0_h/bg1/bg2/bg3/bg4
+    background = "#282828"; # bg0
+    background-deep = "#32302f"; # bg0_s (soft)
+    background-darkest = "#1d2021"; # bg0_h (hard)
+    surface = "#3c3836"; # bg1
+    surface-elevated = "#504945"; # bg2
+    surface-hover = "#665c54"; # bg3
+    surface-active = "#7c6f64"; # bg4
 
-    # Foreground
-    foreground = "#cad3f5"; # text
-    foreground-muted = "#b8c0e0"; # subtext1
-    foreground-dim = "#a5adcb"; # subtext0
+    # Foreground — gruvbox fg/fg2/fg3
+    foreground = "#ebdbb2"; # fg
+    foreground-muted = "#d5c4a1"; # fg2
+    foreground-dim = "#bdae93"; # fg3
 
-    # Accent — catppuccin mauve + blue
-    accent-primary = "#c6a0f6"; # mauve
-    accent-secondary = "#8aadf4"; # blue
+    # Accent — gruvbox orange + blue
+    accent-primary = "#d65d0e"; # orange (dark)
+    accent-secondary = "#83a598"; # blue (bright)
 
     # Borders
-    border = "#494d64"; # surface1
-    border-subtle = "#363a4f"; # surface0
+    border = "#504945"; # bg2
+    border-subtle = "#3c3836"; # bg1
 
     # Semantic
-    success = "#a6da95"; # green
-    warning = "#eed49f"; # yellow
-    error = "#ed8796"; # red
-    info = "#91d7e3"; # sky
+    success = "#b8bb26"; # bright green
+    warning = "#fabd2f"; # bright yellow
+    error = "#fb4934"; # bright red
+    info = "#83a598"; # bright blue
 
     # Effects
-    shadow = "#181926"; # crust
+    shadow = "#1d2021"; # bg0_h
 
-    # Cursor + selection — Macchiato rosewater cursor, surface2 selection
-    # (matches catppuccin's official terminal ports).
-    cursor = "#f4dbd6"; # rosewater
-    selectionBg = "#5b6078"; # surface2
-    selectionFg = "#cad3f5"; # foreground
+    # Cursor + selection — gruvbox terminal port: fg cursor on bg2 selection.
+    cursor = "#ebdbb2"; # fg
+    selectionBg = "#504945"; # bg2
+    selectionFg = "#ebdbb2"; # fg
 
-    # Full 16-slot ANSI terminal palette (0-7 dim, 8-15 bright). Brights use
-    # the standard catppuccin mapping: 9-14 repeat 1-6, 8 = surface2,
-    # 15 = subtext1.
+    # Full 16-slot ANSI terminal palette — canonical gruvbox dark mapping:
+    # 0-7 normal, 8 = gray (bg4), 9-15 bright.
     ansi = [
-      "#494d64" # 0  black    (surface1)
-      "#ed8796" # 1  red
-      "#a6da95" # 2  green
-      "#eed49f" # 3  yellow
-      "#8aadf4" # 4  blue
-      "#f5bde6" # 5  pink
-      "#8bd5ca" # 6  teal
-      "#a5adcb" # 7  white    (subtext0)
-      "#5b6078" # 8  br-black (surface2)
-      "#ed8796" # 9  br-red
-      "#a6da95" # 10 br-green
-      "#eed49f" # 11 br-yellow
-      "#8aadf4" # 12 br-blue
-      "#f5bde6" # 13 br-pink
-      "#8bd5ca" # 14 br-teal
-      "#b8c0e0" # 15 br-white (subtext1)
+      "#282828" # 0  black    (bg0)
+      "#cc241d" # 1  red
+      "#98971a" # 2  green
+      "#d79921" # 3  yellow
+      "#458588" # 4  blue
+      "#b16286" # 5  purple
+      "#689d6a" # 6  aqua
+      "#a89984" # 7  white    (fg4)
+      "#928374" # 8  br-black (gray)
+      "#fb4934" # 9  br-red
+      "#b8bb26" # 10 br-green
+      "#fabd2f" # 11 br-yellow
+      "#83a598" # 12 br-blue
+      "#d3869b" # 13 br-purple
+      "#8ec07c" # 14 br-aqua
+      "#ebdbb2" # 15 br-white (fg)
     ];
   };
 
   icons = {
-    # Name only — the package (Tela-circle purple, plus the prune of upstream's
+    # Name only — the package (Tela-circle orange, plus the prune of upstream's
     # dangling symlinks) is built in home/theme.nix because it needs pkgs.
-    name = "Tela-circle-purple-dark";
+    name = "Tela-circle-orange-dark";
   };
 
   fonts = {

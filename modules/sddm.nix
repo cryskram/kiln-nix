@@ -1,4 +1,4 @@
-# SDDM + Astronaut — highly customized Catppuccin Macchiato login per RICE §16
+# SDDM + Astronaut — login screen per RICE §25 (Gruvbox desktop accent)
 # Futuristic, technical, GUI-based, shows NixOS/hostname/kernel/session/network/time
 {
   pkgs,

@@ -205,7 +205,7 @@ in
       defaultProvider = "opencode-go";
       defaultModel = "auto";
       defaultThinkingLevel = "high";
-      theme = "catppuccin-macchiato";
+      theme = "gruvbox-dark";
       defaultTools = [ "+codemode" ]; # keep read/bash/edit/write + codemode (JS orchestration, parallel calls, image models)
 
       # Built-in MCP off: pi-mcp-adapter (wired in `extensions` below) registers the
@@ -872,9 +872,9 @@ in
     # Flake commands (nix shell/run #pkg) ignore config files entirely; this is
     # their only allowUnfree knob. System builds already allow unfree (below).
     NIXPKGS_ALLOW_UNFREE = "1";
-    # System-wide cursor Catppuccin Macchiato Mauve
+    # System-wide cursor — Bibata Modern Amber (gruvbox orange; see home/theme.nix)
     XCURSOR_SIZE = "24";
-    XCURSOR_THEME = "catppuccin-macchiato-mauve-cursors";
+    XCURSOR_THEME = "Bibata-Modern-Amber";
     # Electron Wayland (Postman, Slack, Discord, Figma) — fixes Missing X server on Niri
     NIXOS_OZONE_WL = "1";
     ELECTRON_OZONE_PLATFORM_HINT = "auto";

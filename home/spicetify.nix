@@ -1,4 +1,4 @@
-# Spicetify — Spotify Catppuccin Macchiato (DEV, RICE §4)
+# Spicetify — Spotify Gruvbox Dark (DEV, RICE §4)
 # Uses spicetify-nix (follows nixpkgs) for declarative theming.
 { pkgs, spicetify-nix, ... }:
 let
@@ -8,26 +8,26 @@ in
 
   programs.spicetify = {
     enable = true;
-    # Theme: text + Catppuccin Macchiato palette
+    # Theme: text + Gruvbox Dark palette
     theme = spicePkgs.themes.text;
     colorScheme = "custom";
     customColorScheme = {
-      text = "cad3f5";
-      subtext = "b8c0e0";
-      sidebarText = "cad3f5";
-      main = "24273a";
-      sidebar = "1e2030";
-      player = "24273a";
-      card = "363a4f";
-      shadow = "181926";
-      selectedRow = "494d64";
-      button = "c6a0f6";
-      buttonActive = "c6a0f6";
-      buttonDisabled = "5b6078";
-      tabActive = "c6a0f6";
-      notification = "c6a0f6";
-      notificationError = "ed8796";
-      misc = "5b6078";
+      text = "ebdbb2";
+      subtext = "d5c4a1";
+      sidebarText = "ebdbb2";
+      main = "282828";
+      sidebar = "1d2021";
+      player = "282828";
+      card = "3c3836";
+      shadow = "1d2021";
+      selectedRow = "504945";
+      button = "d65d0e";
+      buttonActive = "d65d0e";
+      buttonDisabled = "665c54";
+      tabActive = "d65d0e";
+      notification = "d65d0e";
+      notificationError = "fb4934";
+      misc = "665c54";
     };
     enabledExtensions = with spicePkgs.extensions; [
       shuffle

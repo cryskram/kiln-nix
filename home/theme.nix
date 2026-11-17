@@ -1,4 +1,4 @@
-# Home-level theming — Catppuccin Macchiato
+# Home-level theming — Gruvbox Dark
 # Imports centralized tokens; no hard-coded palette elsewhere per RICE §4.
 { pkgs, ... }:
 let
@@ -6,27 +6,26 @@ let
   cn = tokens.colorsNoHash;
 in
 {
-  # GTK — Catppuccin Macchiato (via catppuccin/nix + catppuccin-gtk)
+  # GTK — Gruvbox Dark
   gtk = {
     enable = true;
     theme = {
-      package = pkgs.catppuccin-gtk.override {
-        variant = "macchiato";
-        accents = [ "mauve" ];
-      };
-      name = "catppuccin-macchiato-mauve-standard";
+      package = pkgs.gruvbox-dark-gtk;
+      name = "gruvbox-dark";
     };
-    # Tela-circle, purple colourway (name from theme/tokens.nix).
-    # Upstream 2026-07-07 ships three dangling symlinks (xsi-addon-symbolic,
+    # Tela-circle, orange colourway (name from theme/tokens.nix).
+    # Upstream has shipped dangling symlinks (xsi-addon-symbolic,
     # application-x-addon-symbolic, org.xfce.appfinder) which nixpkgs'
-    # noBrokenSymlinks fixup hook rejects; they are pruned before fixup. Drop
-    # this override once upstream or nixpkgs ships the fix.
+    # noBrokenSymlinks fixup hook rejects; they are pruned before fixup. The
+    # orange variant currently has none, so this is insurance, not a workaround.
     iconTheme = {
-      package = (pkgs.tela-circle-icon-theme.override { colorVariants = [ "purple" ]; }).overrideAttrs (old: {
-        postInstall = (old.postInstall or "") + ''
-          find "$out/share/icons" -xtype l -delete
-        '';
-      });
+      package =
+        (pkgs.tela-circle-icon-theme.override { colorVariants = [ "orange" ]; }).overrideAttrs
+          (old: {
+            postInstall = (old.postInstall or "") + ''
+              find "$out/share/icons" -xtype l -delete
+            '';
+          });
       name = tokens.icons.name;
     };
     font = {
@@ -39,10 +38,11 @@ in
   # writes gtk-2.0 and gtk-3.0 settings.ini), so the value is set here too.
   dconf.settings."org/gnome/desktop/interface"."icon-theme" = tokens.icons.name;
 
-  # Cursor — Catppuccin Macchiato Mauve at 24px
+  # Cursor — Bibata Modern Amber (gruvbox orange) at 24px. nixpkgs carries no
+  # gruvbox cursor port, so the accent colour comes from Bibata's amber variant.
   home.pointerCursor = {
-    package = pkgs.catppuccin-cursors.macchiatoMauve;
-    name = "catppuccin-macchiato-mauve-cursors";
+    package = pkgs.bibata-cursors;
+    name = "Bibata-Modern-Amber";
     size = 24;
     x11.enable = true;
     gtk.enable = true;
@@ -50,7 +50,7 @@ in
 
   home.sessionVariables = {
     XCURSOR_SIZE = "24";
-    XCURSOR_THEME = "catppuccin-macchiato-mauve-cursors";
+    XCURSOR_THEME = "Bibata-Modern-Amber";
   };
 
   # Qt — use qt5ct on Wayland (gtk2 platform theme requires X DISPLAY and breaks Quickshell on pure Wayland)
@@ -59,18 +59,14 @@ in
     platformTheme.name = "qt5ct";
   };
 
-  # Terminal — ghostty Macchiato glass (more blur)
+  # Terminal — ghostty Gruvbox glass (more blur)
   # The full palette is declared here from the central tokens (RICE §4) rather
-  # than left to ghostty's bundled theme file: colors track the repo's single
-  # source of truth, and the explicit values override the bundled "Catppuccin
-  # Macchiato" theme where the flavor diverges from the desktop tokens.
+  # than left to a bundled theme file, so terminal colours track the repo's
+  # single source of truth.
   programs.ghostty.settings = {
     font-family = tokens.fonts.mono;
     font-size = 11;
-    theme = "Catppuccin Macchiato";
-    # Sink the terminal below the rest of the desktop: crust instead of the
-    # flavor's base. Ghostty applies explicit colors over theme colors, so the
-    # Macchiato palette/accent set is kept and only the base is darkened.
+    # Sink the terminal below the rest of the desktop: bg0_h instead of bg0.
     background = tokens.colors.background-darkest;
     foreground = tokens.colors.foreground;
     cursor-color = tokens.colors.cursor;
@@ -83,7 +79,7 @@ in
     # apply this on macOS and KDE Plasma, so under niri it is inert: the blur
     # comes from niri's window-rule (home/niri.nix).
     background-blur = 32;
-    # Focus is already communicated by niri's 2px mauve active border, so do not
+    # Focus is already communicated by niri's 2px orange active border, so do not
     # also fade unfocused splits. Ghostty defaults unfocused-split-opacity to
     # 0.7, which paints a background-coloured rectangle over every split that
     # does not have focus (1 disables the effect entirely).
