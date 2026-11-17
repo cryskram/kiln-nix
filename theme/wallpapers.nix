@@ -104,4 +104,29 @@ map wallpaper [
     path = "wallpapers/photography/kateryna-sheliuk-efMADvDQvEg.jpg";
     hash = "sha256-W+yVpOfjbDyn3otoeVzVBBLfUBPSd/G4gxfagdLrKNk=";
   }
+  {
+    name = "pixel-pacman.png";
+    path = "wallpapers/pixelart/gruvbox-pacman-full.png";
+    hash = "sha256-Tl5PpQbXc0Kp2nfjR2xwgxY3qF6svvw5rUBW9A3vboo=";
+  }
+  {
+    name = "pixel-pacman-ghosts.png";
+    path = "wallpapers/pixelart/gruvbox-pacman-ghosts.png";
+    hash = "sha256-JlLVPXGZkEe2VkZ0yhAUk86OXvWgqWFBqtENd1QC7G0=";
+  }
+  {
+    name = "pixel-temple.png";
+    path = "wallpapers/pixelart/gruvbox_image44.png";
+    hash = "sha256-oehwYwa0oGZmvc7zZ5vEju2F/swRITuAO6CzrP89jgY=";
+  }
+  {
+    name = "pixel-night-falls.png";
+    path = "wallpapers/pixelart/gruvbox_image55.png";
+    hash = "sha256-lgZbAAWTimybsBD+2ZsS/jwKtyPbQ1QCgt/82RDIHug=";
+  }
+  {
+    name = "pixel-grove.png";
+    path = "wallpapers/pixelart/secluded-grove-pixel.png";
+    hash = "sha256-x0S/gHRVjzsDMA/Jx6ESZ3TXpy6AbhXrNeG2Z2Sc5bo=";
+  }
 ]
