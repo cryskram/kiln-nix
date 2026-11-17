@@ -1,7 +1,10 @@
 # Source and target profiles must differ: writing session creds into the source profile destroys its long-term key.
 config="$HOME/.config/aws-sts.env"
 
-[[ -n "${1:-}" ]] || { echo "Usage: get-sts <MFA_CODE>" >&2; exit 1; }
+[[ -n "${1:-}" ]] || {
+  echo "Usage: get-sts <MFA_CODE>" >&2
+  exit 1
+}
 mfa_code="$1"
 
 if [[ -f "$config" ]]; then

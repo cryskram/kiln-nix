@@ -1,11 +1,3 @@
-/**
- * Interactive sign-in — one Google account per run, chosen in Google's own
- * account picker when `prompt=select_account` is set.
- *
- * Two capture paths: the loopback listener (normal case, browser opens on this
- * machine) and pasting the redirected URL (no listener, or the browser lives
- * somewhere else).
- */
 import type { ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import {
 	BASE_SCOPES,
@@ -37,10 +29,7 @@ function codeFromInput(input: string): string {
 }
 
 async function pasteCode(ctx: ExtensionCommandContext, redirectUri: string): Promise<string> {
-	const input = await ctx.ui.input(
-		"Paste the redirected URL",
-		`${redirectUri}?code=… (or the code alone)`,
-	);
+	const input = await ctx.ui.input("Paste the redirected URL", `${redirectUri}?code=… (or the code alone)`);
 	if (input === undefined) throw new Error("Sign-in cancelled.");
 	return codeFromInput(input);
 }
@@ -51,9 +40,6 @@ export async function signInWithGoogle(
 ): Promise<AccountRecord> {
 	const client = loadClient();
 	if (!client) throw new Error("No OAuth client configured yet. Run /google setup first.");
-	// openid + email are what name the account (ID token claims, then userinfo),
-	// so they are added back whatever the caller asked for: a `--scopes=` list
-	// without them signs in successfully and then cannot say who signed in.
 	const requested = options.scopes?.length ? options.scopes : DEFAULT_SCOPES;
 	const scopes = [...new Set([...BASE_SCOPES, ...requested])];
 	const state = crypto.randomUUID();
@@ -104,14 +90,10 @@ export async function signInWithGoogle(
 			claims.name ??= info.name;
 			if (!email) {
 				identityError =
-					typeof info.error === "string"
-						? info.error
-						: (info.error?.message ?? `userinfo returned ${response.status}`);
+					typeof info.error === "string" ? info.error : (info.error?.message ?? `userinfo returned ${response.status}`);
 			}
 		}
 		if (!email) {
-			// Happens when the authorization request omitted openid/email: the token
-			// exchange succeeds, then nothing identifies the account.
 			throw new Error(
 				`Signed in, but Google returned no email address (${identityError ?? "no id_token, and userinfo had no email"}; granted scopes: ${scopeLabels(tokens.scope ? tokens.scope.split(" ") : scopes)}). ` +
 					`Run /google add again — openid and email are now always requested.`,

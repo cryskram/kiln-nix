@@ -1,8 +1,3 @@
-/**
- * Google API layer — one access token per account, request helpers, and the
- * small amount of Drive/Docs knowledge the tools need (file references by ID,
- * URL, or name; Doc text and outline extraction; export MIME choices).
- */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -29,7 +24,6 @@ export const GOOGLE_NATIVE = new Set<string>([MIME.doc, MIME.sheet, MIME.slides,
 
 export type ResolvedAccount = { email: string; record: AccountRecord };
 
-/** Resolve the account param: an explicit email, or the active account. */
 export function requireAccount(ref?: string): ResolvedAccount {
 	const store = loadAccounts();
 	const email = ref?.trim() || store.active;
@@ -104,9 +98,7 @@ async function describeHttpError(response: Response): Promise<string> {
 	try {
 		const json = JSON.parse(text) as { error?: { message?: string; status?: string; errors?: unknown } };
 		if (json.error?.message) detail = json.error.message;
-	} catch {
-		/* not JSON: keep the raw slice */
-	}
+	} catch {}
 	const hints: string[] = [];
 	if (response.status === 401) hints.push("token rejected — run /google and re-authenticate this account");
 	if (response.status === 403) {
@@ -115,7 +107,8 @@ async function describeHttpError(response: Response): Promise<string> {
 			hints.push("the account is missing a scope for this call — re-authenticate with /google add --scopes=…");
 		}
 		if (lower.includes("rate") || lower.includes("quota")) hints.push("quota exceeded; retry later");
-		if (lower.includes("has not been used") || lower.includes("disabled")) hints.push("enable the API for that service in the Google Cloud project");
+		if (lower.includes("has not been used") || lower.includes("disabled"))
+			hints.push("enable the API for that service in the Google Cloud project");
 	}
 	if (response.status === 404) hints.push("not found, or the signed-in account cannot see it");
 	if (response.status === 400 && detail.toLowerCase().includes("parse")) hints.push("check the ID/range/body format");
@@ -154,10 +147,6 @@ export async function googleBytes(options: FetchOptions): Promise<ArrayBuffer> {
 	return response.arrayBuffer();
 }
 
-/* ------------------------------------------------------------------ *
- * File references: raw id, a Google URL, or a name to search for
- * ------------------------------------------------------------------ */
-
 const ID_PATTERN = /^[a-zA-Z0-9_-]{20,}$/;
 
 export function extractFileId(ref: string): string | undefined {
@@ -179,8 +168,13 @@ export type DriveFile = {
 	size?: string;
 };
 
-/** Drive query syntax with escaping, so names with apostrophes do not break. */
-export function driveQuery(parts: { name?: string; mimeType?: string; parents?: string[]; fullText?: string; raw?: string }): string {
+export function driveQuery(parts: {
+	name?: string;
+	mimeType?: string;
+	parents?: string[];
+	fullText?: string;
+	raw?: string;
+}): string {
 	const clauses: string[] = ["trashed = false"];
 	if (parts.raw) clauses.push(`(${parts.raw})`);
 	if (parts.name) clauses.push(`name = '${parts.name.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`);
@@ -203,7 +197,8 @@ export async function searchFiles(options: {
 }): Promise<{ files: DriveFile[]; nextPageToken?: string }> {
 	const params = new URLSearchParams({
 		q: options.query ?? driveQuery({}),
-		fields: "nextPageToken,files(id,name,mimeType,modifiedTime,owners(emailAddress,displayName),parents,webViewLink,size)",
+		fields:
+			"nextPageToken,files(id,name,mimeType,modifiedTime,owners(emailAddress,displayName),parents,webViewLink,size)",
 		pageSize: String(Math.min(Math.max(options.pageSize ?? 25, 1), 100)),
 		includeItemsFromAllDrives: "true",
 		supportsAllDrives: "true",
@@ -213,11 +208,6 @@ export async function searchFiles(options: {
 	return googleJson({ email: options.email, url: `${ENDPOINT.drive}/files?${params}`, signal: options.signal });
 }
 
-/**
- * Accepts an ID, a Google URL, or a name. Names are searched (optionally
- * narrowed by MIME type); an ambiguous name fails with the candidates listed
- * rather than silently editing the wrong file.
- */
 export async function resolveFile(options: {
 	email: string;
 	ref: string;
@@ -241,17 +231,11 @@ export async function resolveFile(options: {
 		);
 	}
 	if (files.length > 1) {
-		const list = files
-			.map((f) => `${f.id}  ${f.name}  (${f.mimeType}, modified ${f.modifiedTime ?? "?"})`)
-			.join("\n");
+		const list = files.map((f) => `${f.id}  ${f.name}  (${f.mimeType}, modified ${f.modifiedTime ?? "?"})`).join("\n");
 		throw new Error(`"${options.ref}" matches ${files.length} files. Pass one of these IDs:\n${list}`);
 	}
 	return files[0]!;
 }
-
-/* ------------------------------------------------------------------ *
- * Docs helpers
- * ------------------------------------------------------------------ */
 
 type DocsElement = {
 	textRun?: { content?: string };
@@ -281,9 +265,7 @@ export function docText(doc: GoogleDoc): string {
 			if (element.paragraph === undefined && element.table === undefined) continue;
 			if (element.table) {
 				for (const row of element.table.tableRows ?? []) {
-					const cells = (row.tableCells ?? []).map((cell) =>
-						(cell.content ?? []).map(paragraphText).join("").trim(),
-					);
+					const cells = (row.tableCells ?? []).map((cell) => (cell.content ?? []).map(paragraphText).join("").trim());
 					lines.push(`${"\t".repeat(depth)}| ${cells.join(" | ")} |`);
 				}
 				continue;
@@ -296,7 +278,6 @@ export function docText(doc: GoogleDoc): string {
 	return lines.join("\n").trimEnd();
 }
 
-/** Paragraph/heading map with the indexes the Docs API needs for edits. */
 export function docOutline(doc: GoogleDoc): Array<{
 	index: number;
 	endIndex: number;
@@ -321,10 +302,6 @@ export function docEndIndex(doc: GoogleDoc): number {
 	const last = content[content.length - 1];
 	return last?.endIndex ?? 1;
 }
-
-/* ------------------------------------------------------------------ *
- * Export / download
- * ------------------------------------------------------------------ */
 
 const EXPORT_MIME: Record<string, Record<string, string>> = {
 	[MIME.doc]: {
@@ -360,10 +337,12 @@ export const DEFAULT_FORMAT: Record<string, string> = {
 
 export function exportMimeFor(mimeType: string, format?: string): string {
 	const table = EXPORT_MIME[mimeType];
-	if (!table) throw new Error(`${mimeType} is not a Google-native file; it can be downloaded directly (format ignored).`);
+	if (!table)
+		throw new Error(`${mimeType} is not a Google-native file; it can be downloaded directly (format ignored).`);
 	const chosen = format ?? DEFAULT_FORMAT[mimeType]!;
 	const mime = table[chosen];
-	if (!mime) throw new Error(`Format "${chosen}" is not available for ${mimeType}. Try: ${Object.keys(table).join(", ")}`);
+	if (!mime)
+		throw new Error(`Format "${chosen}" is not available for ${mimeType}. Try: ${Object.keys(table).join(", ")}`);
 	return mime;
 }
 
@@ -415,12 +394,6 @@ export function writeLocalFile(path: string, bytes: ArrayBuffer): number {
 	return bytes.byteLength;
 }
 
-/**
- * Resumable upload (create, or PATCH an existing file's bytes when `fileId` is
- * given). One PUT for the whole body keeps it simple and removes the 5 MB
- * multipart ceiling; the content type is what decides whether Drive stores a
- * real notebook type or an opaque blob.
- */
 export async function resumableUpload(options: {
 	email: string;
 	bytes: Buffer;
@@ -460,16 +433,8 @@ export async function resumableUpload(options: {
 	return (await upload.json()) as { id: string; name: string; mimeType?: string };
 }
 
-/* ------------------------------------------------------------------ *
- * Output shaping
- * ------------------------------------------------------------------ */
-
 export const MODEL_TEXT_LIMIT = 18_000;
 
-/**
- * Model-facing text over the limit is written to a temp file and replaced by a
- * short note naming it, so nothing is silently dropped.
- */
 export function clampText(text: string, label = "output", limit = MODEL_TEXT_LIMIT): string {
 	if (text.length <= limit) return text;
 	const path = join(tmpdir(), `pi-google-${label.replace(/[^a-zA-Z0-9._-]+/g, "-")}-${Date.now()}.txt`);

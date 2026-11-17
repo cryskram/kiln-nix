@@ -1,34 +1,4 @@
-/**
- * Slack message edit/delete — the two Web API methods the Slack MCP server does
- * not wrap.
- *
- * The MCP server on the user level (`korotovsky/slack-mcp-server`, see
- * `modules/core.nix` + `docs/slack.md`) exposes history, search, posting,
- * reactions, unreads and usergroups — but no `chat.update` and no `chat.delete`,
- * and v1.3.0 is the latest release, so there is no pin to bump.
- *
- * What is left is Small and self-contained on purpose: no HTTP client
- * dependency, no second credential store, no channel-name resolution. It reads
- * the SAME credential files as the MCP server wrapper:
- *
- *   secrets/slack-xoxc-token + secrets/slack-xoxd-token   (browser session)
- *   secrets/slack-mcp-token                               (xoxp / xoxb app)
- *
- * Channel names are deliberately NOT resolved here: `#channel` and
- * `@username_dm` resolution lives in the MCP server's caches, not in the Web API
- * path this file takes. Channel IDs and `ts` values come straight out of
- * `conversations_history` / `conversations_search_messages` output, and a message
- * permalink is accepted as a shortcut for both.
- *
- * Slack rule that no credential can bend: you can only edit or delete your OWN
- * messages (admins aside). Anything else comes back as `cant_update_message` /
- * `cant_delete_message`.
- *
- * Loading (declarative): listed in `programs.pi.coding-agent.extensions` in
- * `modules/core.nix`; gated by the `slack_*_message` rules in `settings.guard`
- * there. For a one-off run: `pi -e ./slack-message.ts`.
- */
-
+// chat.update/chat.delete, which the Slack MCP server does not wrap; uses the same credentials as modules/pi/slack-mcp.sh.
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -43,13 +13,13 @@ const NAMESPACE = {
 		"Targets are Slack IDs, not names: take `channel` (C…/D…/G…) and `ts` from conversations_history or " +
 		"conversations_search_messages output, or pass a message permalink (…/archives/C123/p1234567890123456) " +
 		"as either argument. Only your own messages can be edited or deleted. Deleting asks for confirmation in " +
-		"interactive sessions and is blocked in headless ones (pi-guard `slack_delete_message = \"ask\"`).",
+		'interactive sessions and is blocked in headless ones (pi-guard `slack_delete_message = "ask"`).',
 };
 
 const READ_WRITE = { readOnlyHint: false, destructiveHint: false, openWorldHint: true } as const;
 const DESTRUCTIVE = { readOnlyHint: false, destructiveHint: true, openWorldHint: true } as const;
 
-/** xoxc/xoxd calls are fingerprinted; a browser UA is what the tokens were minted against. */
+// xoxc/xoxd session tokens are fingerprinted against the browser user agent they were minted with.
 const DEFAULT_USER_AGENT =
 	"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 
@@ -67,7 +37,6 @@ function secretsDir(): string {
 	return process.env.SLACK_MCP_SECRETS_DIR ?? join(homedir(), "niri-desktop", "secrets");
 }
 
-/** Token files are single-line and hand-written; trim anything a paste dragged in. */
 function readSecretFile(path: string): string | undefined {
 	try {
 		const value = readFileSync(path, "utf8").replace(/[\r\n\t ]+/g, "");
@@ -77,12 +46,6 @@ function readSecretFile(path: string): string | undefined {
 	}
 }
 
-/**
- * Credential resolution mirrors the MCP wrapper in `modules/core.nix`: browser
- * session first (no Slack app involved), then a single app token by prefix.
- * Environment wins over files so a one-off run can override without touching
- * `secrets/`.
- */
 export function resolveAuth(): SlackAuth {
 	const base = {
 		"content-type": "application/json; charset=utf-8",
@@ -117,7 +80,10 @@ export function resolveAuth(): SlackAuth {
 	if (appToken) {
 		return {
 			kind: appToken.startsWith("xoxb-") ? "bot" : "user",
-			source: process.env.SLACK_MCP_XOXP_TOKEN || process.env.SLACK_MCP_XOXB_TOKEN ? "env app token" : join(dir, "slack-mcp-token"),
+			source:
+				process.env.SLACK_MCP_XOXP_TOKEN || process.env.SLACK_MCP_XOXB_TOKEN
+					? "env app token"
+					: join(dir, "slack-mcp-token"),
 			headers: { ...base, authorization: `Bearer ${appToken}` },
 		};
 	}
@@ -128,7 +94,6 @@ export function resolveAuth(): SlackAuth {
 	);
 }
 
-/** Slack answers HTTP 200 with `ok:false`; the `error` string is the real failure. */
 function explain(error: string, auth: SlackAuth): string {
 	switch (error) {
 		case "cant_update_message":
@@ -152,7 +117,11 @@ function explain(error: string, auth: SlackAuth): string {
 	}
 }
 
-async function slackCall(method: string, body: Record<string, unknown>, signal?: AbortSignal): Promise<Record<string, unknown>> {
+async function slackCall(
+	method: string,
+	body: Record<string, unknown>,
+	signal?: AbortSignal,
+): Promise<Record<string, unknown>> {
 	const auth = resolveAuth();
 	let response: Response;
 	try {
@@ -180,7 +149,6 @@ async function slackCall(method: string, body: Record<string, unknown>, signal?:
 	return payload;
 }
 
-/** `…/archives/C123ABC/p1730000000123456` → channel + ts. */
 function fromPermalink(ref: string): { channel: string; ts: string } | undefined {
 	const match = /\/archives\/([A-Z0-9]+)\/p(\d{10})(\d{6})/.exec(ref);
 	return match ? { channel: match[1]!, ts: `${match[2]}.${match[3]}` } : undefined;
@@ -220,8 +188,12 @@ const editMessage = defineTool({
 		"Pass channel + ts from conversations_history/search output, or a message permalink.",
 	parameters: Type.Object({
 		channel: Type.Optional(Type.String({ description: "Channel or DM ID (C…/D…/G…), or a Slack message permalink." })),
-		ts: Type.Optional(Type.String({ description: "Message timestamp, e.g. 1730000000.123456, or a Slack message permalink." })),
-		text: Type.String({ description: "Replacement message text. Slack markdown (*bold*, `code`, <url|label>) is used as-is." }),
+		ts: Type.Optional(
+			Type.String({ description: "Message timestamp, e.g. 1730000000.123456, or a Slack message permalink." }),
+		),
+		text: Type.String({
+			description: "Replacement message text. Slack markdown (*bold*, `code`, <url|label>) is used as-is.",
+		}),
 	}),
 	namespace: NAMESPACE,
 	annotations: READ_WRITE,
@@ -242,7 +214,9 @@ const deleteMessage = defineTool({
 		"'This message was deleted' tombstone. Confirmation is handled by pi-guard.",
 	parameters: Type.Object({
 		channel: Type.Optional(Type.String({ description: "Channel or DM ID (C…/D…/G…), or a Slack message permalink." })),
-		ts: Type.Optional(Type.String({ description: "Message timestamp, e.g. 1730000000.123456, or a Slack message permalink." })),
+		ts: Type.Optional(
+			Type.String({ description: "Message timestamp, e.g. 1730000000.123456, or a Slack message permalink." }),
+		),
 	}),
 	namespace: NAMESPACE,
 	annotations: DESTRUCTIVE,

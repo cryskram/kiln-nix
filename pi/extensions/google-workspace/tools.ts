@@ -1,10 +1,3 @@
-/**
- * The Google tools: Sheets, Docs, and Drive on any connected account.
- *
- * Every tool takes an optional `account` (email) and defaults to the account
- * selected with `/google use`. Read-only tools are annotated as such so
- * permission layers can tell them apart.
- */
 import { readFileSync, statSync } from "node:fs";
 import { basename, extname, join } from "node:path";
 import { Type } from "@earendil-works/pi-ai";
@@ -95,12 +88,9 @@ const UPLOAD_MIME: Record<string, string> = {
 	".odt": "application/vnd.oasis.opendocument.text",
 	".ods": "application/vnd.oasis.opendocument.spreadsheet",
 	".mp4": "video/mp4",
-	// Colab notebooks are ordinary Drive files with this type, which is what gives
-	// them the colab.research.google.com/drive/<id> link instead of a blob link.
 	".ipynb": "application/vnd.google.colaboratory",
 };
 
-/** Notebook MIME types — text, so read returns the JSON rather than just metadata. */
 const NOTEBOOK_MIMES = new Set(["application/vnd.google.colaboratory", "application/x-ipynb+json"]);
 
 function text(value: string, details: Record<string, unknown>) {
@@ -130,10 +120,6 @@ async function resolveDocument(ref: string, account?: string, signal?: AbortSign
 	const file = await resolveFile({ email, ref, mimeType: MIME.doc, signal });
 	return { email, file };
 }
-
-/* ------------------------------------------------------------------ *
- * Accounts
- * ------------------------------------------------------------------ */
 
 const googleAccounts = defineTool({
 	name: "google_accounts",
@@ -167,10 +153,6 @@ const googleAccounts = defineTool({
 	},
 });
 
-/* ------------------------------------------------------------------ *
- * Sheets
- * ------------------------------------------------------------------ */
-
 const sheetsRead = defineTool({
 	name: "google_sheets_read",
 	label: "Read spreadsheet",
@@ -197,7 +179,15 @@ const sheetsRead = defineTool({
 		const { email, file } = await resolveSpreadsheet(params.spreadsheet, params.account, signal);
 		const meta = await googleJson<{
 			properties?: { title?: string };
-			sheets?: Array<{ properties?: { sheetId?: number; title?: string; index?: number; hidden?: boolean; gridProperties?: Record<string, number> } }>;
+			sheets?: Array<{
+				properties?: {
+					sheetId?: number;
+					title?: string;
+					index?: number;
+					hidden?: boolean;
+					gridProperties?: Record<string, number>;
+				};
+			}>;
 		}>({
 			email,
 			url: `${ENDPOINT.sheets}/${file.id}?fields=spreadsheetId,properties.title,sheets(properties(sheetId,title,index,hidden,gridProperties))`,
@@ -246,9 +236,11 @@ const sheetsWrite = defineTool({
 			}),
 			{ description: "One entry per range; all are written atomically." },
 		),
-		value_input_option: Type.Optional(Type.Union([Type.Literal("RAW"), Type.Literal("USER_ENTERED")], {
-			description: "Default USER_ENTERED.",
-		})),
+		value_input_option: Type.Optional(
+			Type.Union([Type.Literal("RAW"), Type.Literal("USER_ENTERED")], {
+				description: "Default USER_ENTERED.",
+			}),
+		),
 		account: accountParam,
 	}),
 	namespace: NAMESPACE,
@@ -288,7 +280,7 @@ const sheetsBatch = defineTool({
 		spreadsheet: Type.String({ description: "Spreadsheet ID, URL, or exact file name." }),
 		requests: Type.Array(Type.Any(), {
 			description:
-				"spreadsheets.batchUpdate requests, e.g. [{\"repeatCell\":{\"range\":{\"sheetId\":0,\"startRowIndex\":0,\"endRowIndex\":1},\"cell\":{\"userEnteredFormat\":{\"textFormat\":{\"bold\":true}}},\"fields\":\"userEnteredFormat.textFormat.bold\"}}]",
+				'spreadsheets.batchUpdate requests, e.g. [{"repeatCell":{"range":{"sheetId":0,"startRowIndex":0,"endRowIndex":1},"cell":{"userEnteredFormat":{"textFormat":{"bold":true}}},"fields":"userEnteredFormat.textFormat.bold"}}]',
 		}),
 		account: accountParam,
 	}),
@@ -341,10 +333,6 @@ const sheetsCreate = defineTool({
 	},
 });
 
-/* ------------------------------------------------------------------ *
- * Docs
- * ------------------------------------------------------------------ */
-
 const docsRead = defineTool({
 	name: "google_docs_read",
 	label: "Read document",
@@ -353,7 +341,9 @@ const docsRead = defineTool({
 		"With include_structure, also returns each paragraph's start/end index and style — the indexes batchUpdate needs for editing.",
 	parameters: Type.Object({
 		document: Type.String({ description: "Document ID, URL, or exact file name." }),
-		include_structure: Type.Optional(Type.Boolean({ description: "Include paragraph indexes and heading styles. Default false." })),
+		include_structure: Type.Optional(
+			Type.Boolean({ description: "Include paragraph indexes and heading styles. Default false." }),
+		),
 		account: accountParam,
 	}),
 	namespace: NAMESPACE,
@@ -389,11 +379,13 @@ const docsWrite = defineTool({
 		requests: Type.Optional(
 			Type.Array(Type.Any(), {
 				description:
-					"documents.batchUpdate requests, e.g. [{\"replaceAllText\":{\"containsText\":{\"text\":\"{{name}}\"},\"replaceText\":\"Ada\"}}]",
+					'documents.batchUpdate requests, e.g. [{"replaceAllText":{"containsText":{"text":"{{name}}"},"replaceText":"Ada"}}]',
 			}),
 		),
 		text: Type.Optional(Type.String({ description: "Text to append or to replace the body with." })),
-		mode: Type.Optional(Type.Union([Type.Literal("append"), Type.Literal("replace")], { description: "Default append." })),
+		mode: Type.Optional(
+			Type.Union([Type.Literal("append"), Type.Literal("replace")], { description: "Default append." }),
+		),
 		account: accountParam,
 	}),
 	namespace: NAMESPACE,
@@ -420,7 +412,9 @@ const docsWrite = defineTool({
 			} else {
 				const existing = docText(doc);
 				const separator = existing && !existing.endsWith("\n") ? "\n" : "";
-				requests.push({ insertText: { location: { index: Math.max(1, endIndex - 1) }, text: `${separator}${params.text}` } });
+				requests.push({
+					insertText: { location: { index: Math.max(1, endIndex - 1) }, text: `${separator}${params.text}` },
+				});
 			}
 		}
 		if (!requests.length) throw new Error("Nothing to do: pass `requests`, or `text` with mode append/replace.");
@@ -470,16 +464,15 @@ const docsCreate = defineTool({
 				signal,
 			});
 		}
-		return text(`Created "${created.title ?? params.title}"${params.text ? " with body text" : ""}.\n${docLink(created.documentId)}`, {
-			account: email,
-			documentId: created.documentId,
-		});
+		return text(
+			`Created "${created.title ?? params.title}"${params.text ? " with body text" : ""}.\n${docLink(created.documentId)}`,
+			{
+				account: email,
+				documentId: created.documentId,
+			},
+		);
 	},
 });
-
-/* ------------------------------------------------------------------ *
- * Drive
- * ------------------------------------------------------------------ */
 
 const driveSearch = defineTool({
 	name: "google_drive_search",
@@ -490,7 +483,9 @@ const driveSearch = defineTool({
 	parameters: Type.Object({
 		query: Type.Optional(Type.String({ description: "Raw Drive query, ANDed with the other filters." })),
 		name: Type.Optional(Type.String({ description: "Exact file name." })),
-		mime_type: Type.Optional(Type.String({ description: "MIME type or shorthand: doc, sheet, slides, folder, pdf, docx, xlsx, pptx, csv." })),
+		mime_type: Type.Optional(
+			Type.String({ description: "MIME type or shorthand: doc, sheet, slides, folder, pdf, docx, xlsx, pptx, csv." }),
+		),
 		parent: Type.Optional(Type.String({ description: "Folder ID, 'root', or an exact folder name." })),
 		full_text: Type.Optional(Type.String({ description: "Full-text content search." })),
 		page_size: Type.Optional(Type.Number({ description: "Max results (default 25)." })),
@@ -578,8 +573,6 @@ const driveRead = defineTool({
 			return text(header, { account: email, fileId: file.id, mimeType: file.mimeType });
 		}
 		if (NOTEBOOK_MIMES.has(file.mimeType)) {
-			// A notebook is text: download it (alt=media) and show the JSON, so the
-			// agent can edit cells and upload the result back.
 			const response = await fetch(`${ENDPOINT.drive}/files/${file.id}?alt=media&supportsAllDrives=true`, {
 				headers: { authorization: `Bearer ${await accessToken(email, signal)}` },
 				signal,
@@ -614,11 +607,14 @@ const driveRead = defineTool({
 				});
 			}
 			const body = { tabs, ...(params.ranges?.length ? { ranges: values } : {}) };
-			return text(`${header}\ntabs: ${tabs.join(", ") || "none"}\n\n${clampText(JSON.stringify(body, null, 2), "drive-sheet")}`, {
-				account: email,
-				fileId: file.id,
-				mimeType: file.mimeType,
-			});
+			return text(
+				`${header}\ntabs: ${tabs.join(", ") || "none"}\n\n${clampText(JSON.stringify(body, null, 2), "drive-sheet")}`,
+				{
+					account: email,
+					fileId: file.id,
+					mimeType: file.mimeType,
+				},
+			);
 		}
 		const format = file.mimeType === MIME.doc ? "md" : "txt";
 		const { bytes, mimeType } = await exportFile({ email, fileId: file.id, mimeType: file.mimeType, format, signal });
@@ -640,8 +636,12 @@ const driveExport = defineTool({
 		"A csv export covers only the first tab — read specific ranges with google_sheets_read instead.",
 	parameters: Type.Object({
 		file: Type.String({ description: "File ID, Google URL, or exact file name." }),
-		to: Type.String({ description: "Local destination path (a directory keeps the file's name), e.g. ~/Downloads/report.md" }),
-		format: Type.Optional(Type.String({ description: "Export format; defaults to md for docs, csv for sheets, txt for slides." })),
+		to: Type.String({
+			description: "Local destination path (a directory keeps the file's name), e.g. ~/Downloads/report.md",
+		}),
+		format: Type.Optional(
+			Type.String({ description: "Export format; defaults to md for docs, csv for sheets, txt for slides." }),
+		),
 		account: accountParam,
 	}),
 	namespace: NAMESPACE,
@@ -752,7 +752,11 @@ const driveWrite = defineTool({
 					email,
 					method: "POST",
 					url: `${ENDPOINT.drive}/files?fields=id,name,webViewLink&supportsAllDrives=true`,
-					body: { name: params.name, mimeType: MIME.folder, ...(params.parent ? { parents: [await folderId(params.parent)] } : {}) },
+					body: {
+						name: params.name,
+						mimeType: MIME.folder,
+						...(params.parent ? { parents: [await folderId(params.parent)] } : {}),
+					},
 					signal,
 				});
 				return text(`Created folder "${created.name}" (${created.id}).`, { account: email, folderId: created.id });
@@ -767,7 +771,11 @@ const driveWrite = defineTool({
 					body: { name: params.name },
 					signal,
 				});
-				return text(`Renamed "${file.name}" → "${params.name}".`, { account: email, fileId: file.id, name: params.name });
+				return text(`Renamed "${file.name}" → "${params.name}".`, {
+					account: email,
+					fileId: file.id,
+					name: params.name,
+				});
 			}
 			case "move": {
 				const file = await resolveFile({ email, ref: params.file ?? "", signal });
@@ -786,7 +794,11 @@ const driveWrite = defineTool({
 					body: {},
 					signal,
 				});
-				return text(`Moved "${file.name}" into ${destination}.`, { account: email, fileId: file.id, parent: destination });
+				return text(`Moved "${file.name}" into ${destination}.`, {
+					account: email,
+					fileId: file.id,
+					parent: destination,
+				});
 			}
 			case "copy": {
 				const file = await resolveFile({ email, ref: params.file ?? "", signal });
@@ -830,7 +842,8 @@ const driveWrite = defineTool({
 			case "update_content": {
 				if (!params.local_path) throw new Error(`${params.action} needs local_path.`);
 				const size = statSync(params.local_path).size;
-				if (size > 200 * 1024 * 1024) throw new Error(`${params.local_path} is ${size} bytes; this tool caps uploads at 200 MB.`);
+				if (size > 200 * 1024 * 1024)
+					throw new Error(`${params.local_path} is ${size} bytes; this tool caps uploads at 200 MB.`);
 				const targetMime = params.convert_to
 					? { doc: MIME.doc, sheet: MIME.sheet, slides: MIME.slides }[params.convert_to]
 					: undefined;
@@ -843,9 +856,6 @@ const driveWrite = defineTool({
 				if (params.action === "upload") {
 					const name = params.name ?? basename(params.local_path);
 					const parent = await folderId(params.parent);
-					// Refuse to silently shadow an existing file: Drive does not dedupe by
-					// name, so the usual accident is a second analysis.ipynb and a lost
-					// Colab link. Point at update_content instead.
 					const clash = await searchFiles({ email, query: driveQuery({ name }), pageSize: 2, signal });
 					if (clash.files?.length) {
 						const existingFile = clash.files[0]!;
@@ -856,8 +866,6 @@ const driveWrite = defineTool({
 					}
 					const metadata: Record<string, unknown> = { name };
 					if (parent) metadata.parents = [parent];
-					// Always state the type: Drive will otherwise have to infer it, and an
-					// .ipynb that lands as octet-stream is not a notebook.
 					metadata.mimeType = contentType;
 					const uploaded = await resumableUpload({
 						email,
@@ -919,10 +927,6 @@ const driveWrite = defineTool({
 	},
 });
 
-/* ------------------------------------------------------------------ *
- * Escape hatch
- * ------------------------------------------------------------------ */
-
 const ALLOWED_HOSTS = new Set([
 	"sheets.googleapis.com",
 	"docs.googleapis.com",
@@ -931,14 +935,7 @@ const ALLOWED_HOSTS = new Set([
 	"www.googleapis.com",
 ]);
 
-const ALLOWED_PATHS = [
-	/^\/drive\//,
-	/^\/upload\/drive\//,
-	/^\/gmail\//,
-	/^\/calendar\//,
-	/^\/tasks\//,
-	/^\/oauth2\//,
-];
+const ALLOWED_PATHS = [/^\/drive\//, /^\/upload\/drive\//, /^\/gmail\//, /^\/calendar\//, /^\/tasks\//, /^\/oauth2\//];
 
 const googleApi = defineTool({
 	name: "google_api",
@@ -955,7 +952,8 @@ const googleApi = defineTool({
 			Type.Literal("DELETE"),
 		]),
 		url: Type.String({
-			description: "Full URL, e.g. https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is%3Aunread — or https://sheets.googleapis.com/v4/spreadsheets/ID/values/Sheet1!A1:append",
+			description:
+				"Full URL, e.g. https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is%3Aunread — or https://sheets.googleapis.com/v4/spreadsheets/ID/values/Sheet1!A1:append",
 		}),
 		body: Type.Optional(Type.Any({ description: "JSON request body." })),
 		account: accountParam,
@@ -979,11 +977,10 @@ const googleApi = defineTool({
 		if (!ALLOWED_HOSTS.has(url.hostname)) {
 			throw new Error(`Host ${url.hostname} is not allowed. Allowed: ${[...ALLOWED_HOSTS].join(", ")}`);
 		}
-		if (
-			url.hostname === "www.googleapis.com" &&
-			!ALLOWED_PATHS.some((pattern) => pattern.test(url.pathname))
-		) {
-			throw new Error(`Path ${url.pathname} is not allowed on www.googleapis.com (drive, upload/drive, gmail, calendar, tasks, oauth2 only).`);
+		if (url.hostname === "www.googleapis.com" && !ALLOWED_PATHS.some((pattern) => pattern.test(url.pathname))) {
+			throw new Error(
+				`Path ${url.pathname} is not allowed on www.googleapis.com (drive, upload/drive, gmail, calendar, tasks, oauth2 only).`,
+			);
 		}
 		const result = await googleJson({
 			email,

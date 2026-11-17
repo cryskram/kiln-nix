@@ -1,37 +1,10 @@
-/**
- * Google Workspace for Pi — one extension, two halves.
- *
- * Accounts: `/google` adds Google accounts the same way `/login` picks a model
- * provider. Each sign-in goes through Google's own account chooser
- * (`prompt=select_account`) and lands in its own record, so a personal Gmail
- * account and a Workspace-managed account can sit side by side; `/google use`
- * switches the active one, and every tool accepts an `account` override.
- *
- * Tools: Sheets, Docs and Drive (tools.ts), all with the account's own token.
- * Credentials live outside the repo under `$PI_CODING_AGENT_DIR/google/`:
- * `client.json` is your OAuth client from the Google Cloud console and
- * `accounts.json` holds the tokens (both mode 0600).
- *
- * Declarative: loaded via modules/core.nix `programs.pi.coding-agent.extensions`
- * (the directory, so the sibling modules come along).
- */
+// `/google` manages accounts like `/login`; credentials live in $PI_CODING_AGENT_DIR/google/, outside the repo.
 import { readFileSync } from "node:fs";
-import type {
-	ExtensionAPI,
-	ExtensionCommandContext,
-} from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { ENDPOINT, googleJson, requireAccount } from "./api.ts";
 import { signInWithGoogle } from "./login.ts";
 import { DEFAULT_GROUPS, DEFAULT_SCOPES, parseScopes, SCOPE_GROUPS, scopeLabels } from "./oauth.ts";
-import {
-	accountEmails,
-	clientPath,
-	loadAccounts,
-	loadClient,
-	removeAccount,
-	saveClient,
-	setActive,
-} from "./store.ts";
+import { accountEmails, clientPath, loadAccounts, loadClient, removeAccount, saveClient, setActive } from "./store.ts";
 import { googleTools } from "./tools.ts";
 
 const STATUS_KEY = "google";
@@ -65,24 +38,18 @@ function describeClient(): string {
 	return `OAuth client: ${suffix}…${client.clientSecret ? " (with secret)" : " (no secret — Desktop clients usually have one)"}\nStored at ${clientPath()}`;
 }
 
-/**
- * Dialog input is not clean text: terminal palette replies (OSC 4), cursor reports
- * and drag & drop quoting all arrive as if typed. `\u001b]4;65;rgb:…\u001b\\` landed
- * inside a pasted path once and the path was stored as the client ID.
- */
 export function sanitizeInput(value: string): string {
 	return value
-		.replace(/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)?/g, "") // OSC … BEL | ESC \
-		.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "") // CSI
-		.replace(/\u001b[@-Z\\-_]/g, "") // other escapes
-		.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "") // C0 except tab
+		.replace(/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)?/g, "")
+		.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "")
+		.replace(/\u001b[@-Z\\-_]/g, "")
+		.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "")
 		.trim()
 		.replace(/^['"]|['"]$/g, "")
-		.replace(/\\(?=\s)/g, "") // /path\ with\ spaces
+		.replace(/\\(?=\s)/g, "")
 		.trim();
 }
 
-/** Every Google OAuth client ID ends this way; anything else is a paste accident. */
 const CLIENT_ID_PATTERN = /[0-9]{6,}-[a-z0-9_-]+\.apps\.googleusercontent\.com/i;
 const CLIENT_ID_EXACT = new RegExp(`^${CLIENT_ID_PATTERN.source}$`, "i");
 
@@ -104,9 +71,6 @@ async function readClientInput(value: string): Promise<unknown> {
 		try {
 			return JSON.parse(readFileSync(expanded, "utf8"));
 		} catch (error) {
-			// Never fall back to "must be a bare client ID" here: that is exactly
-			// how a path full of control sequences became the stored client ID and
-			// produced Google's "OAuth client was not found" an hour later.
 			throw new Error(`Could not read an OAuth client from "${expanded}": ${(error as Error).message}`);
 		}
 	}
@@ -179,8 +143,6 @@ async function addAccount(ctx: ExtensionCommandContext, args: string): Promise<v
 	for (const token of args.split(/\s+/).filter(Boolean)) {
 		if (token.startsWith("--scopes=")) {
 			try {
-				// parseScopes returns the named groups/URLs only; the base identity
-				// scopes are re-added in signInWithGoogle, which is where they matter.
 				scopes = parseScopes(token.slice("--scopes=".length));
 			} catch (error) {
 				ctx.ui.notify((error as Error).message, "error");
@@ -259,7 +221,12 @@ async function menu(ctx: ExtensionCommandContext): Promise<void> {
 		if (choice.startsWith("🗑")) {
 			const email = await ctx.ui.select("Remove which account?", emails);
 			if (!email) continue;
-			if (await ctx.ui.confirm("Remove account?", `${email} will be signed out of Pi. Google keeps the app authorized — revoke it in your Google account if you want that undone.`)) {
+			if (
+				await ctx.ui.confirm(
+					"Remove account?",
+					`${email} will be signed out of Pi. Google keeps the app authorized — revoke it in your Google account if you want that undone.`,
+				)
+			) {
 				setActive(emails.find((candidate) => candidate !== email) ?? "");
 				removeAccount(email);
 				ctx.ui.notify(`Removed ${email}.`, "info");
@@ -385,7 +352,9 @@ async function runCommand(rawArgs: string, ctx: ExtensionCommandContext): Promis
 			ctx.ui.notify(
 				`Scope groups:\n${Object.entries(SCOPE_GROUPS)
 					.map(([name, url]) => `  ${name} — ${url}`)
-					.join("\n")}\n\nDefault: ${DEFAULT_GROUPS.join(", ")}\nExample: /google add --scopes=drive,sheets,docs,gmail,calendar`,
+					.join(
+						"\n",
+					)}\n\nDefault: ${DEFAULT_GROUPS.join(", ")}\nExample: /google add --scopes=drive,sheets,docs,gmail,calendar`,
 				"info",
 			);
 			return;

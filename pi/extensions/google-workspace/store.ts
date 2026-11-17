@@ -1,12 +1,4 @@
-/**
- * Google account store — OAuth client credentials plus one token record per account.
- *
- * Lives outside the repo at `$PI_CODING_AGENT_DIR/google/` (dir 0700):
- *   client.json    the user's own OAuth client, from the Google Cloud console
- *   accounts.json  per-account tokens, granted scopes, and the active email
- *
- * Never printed, never committed: both files are written at mode 0600.
- */
+// client.json and accounts.json are always written with mode 0600.
 import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -16,15 +8,12 @@ export type ClientCredentials = { clientId: string; clientSecret?: string };
 export type AccountRecord = {
 	email: string;
 	name?: string;
-	/** Google's `hd` claim — set only for Workspace-managed accounts. */
 	hostedDomain?: string;
 	refreshToken?: string;
 	accessToken?: string;
-	/** Epoch ms; the access token is treated as dead 60s before this. */
 	expiresAt?: number;
 	scopes: string[];
 	addedAt: string;
-	/** Set when a refresh was rejected: the account needs an interactive sign-in. */
 	needsReauth?: boolean;
 };
 
@@ -56,10 +45,8 @@ function readJson(path: string): unknown {
 	}
 }
 
-/** Every Google OAuth client ID ends with this; a stored value that does not is a paste accident, not a client. */
 const CLIENT_ID_PATTERN = /^[0-9]{6,}-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i;
 
-/** Accepts `{clientId, clientSecret}`, Google's downloaded `{"installed":{...}}` / `{"web":{...}}`, or nothing. */
 function parseClient(raw: unknown): ClientCredentials | undefined {
 	if (!raw || typeof raw !== "object") return undefined;
 	const outer = raw as Record<string, unknown>;
@@ -67,8 +54,6 @@ function parseClient(raw: unknown): ClientCredentials | undefined {
 	const id = inner.client_id ?? inner.clientId;
 	if (typeof id !== "string" || !id) return undefined;
 	if (!CLIENT_ID_PATTERN.test(id.trim())) {
-		// Refusing here is the point: a rejected ID would otherwise surface as
-		// Google's unhelpful "OAuth client was not found" on the next sign-in.
 		throw new Error(
 			`"${id.trim().slice(0, 60)}" is not a Google OAuth client ID (expected something like 1234567890-abc.apps.googleusercontent.com).`,
 		);
@@ -96,8 +81,7 @@ export function saveClient(raw: unknown): ClientCredentials {
 
 export function loadAccounts(): AccountStore {
 	const raw = readJson(accountsPath()) as Partial<AccountStore> | undefined;
-	const accounts =
-		raw?.accounts && typeof raw.accounts === "object" ? (raw.accounts as AccountStore["accounts"]) : {};
+	const accounts = raw?.accounts && typeof raw.accounts === "object" ? (raw.accounts as AccountStore["accounts"]) : {};
 	const active = typeof raw?.active === "string" && accounts[raw.active] ? raw.active : Object.keys(accounts)[0];
 	return { active, accounts };
 }

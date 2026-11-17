@@ -39,7 +39,47 @@
     {
       packages.${system} = import ./pi/packages.nix { inherit pkgs; };
 
-      formatter.${system} = pkgs.nixfmt-tree;
+      formatter.${system} = pkgs.treefmt.withConfig {
+        runtimeInputs = with pkgs; [
+          nixfmt
+          biome
+          shfmt
+        ];
+        settings = {
+          on-unmatched = "debug";
+          excludes = [
+            "flake.lock"
+            "patches/*"
+            "home/fish/completions/*"
+          ];
+          formatter = {
+            nixfmt = {
+              command = "nixfmt";
+              includes = [ "*.nix" ];
+            };
+            biome = {
+              command = "biome";
+              options = [
+                "format"
+                "--write"
+              ];
+              includes = [
+                "pi/extensions/*.ts"
+                "pi/extensions/**/*.ts"
+              ];
+            };
+            shfmt = {
+              command = "shfmt";
+              options = [
+                "--write"
+                "--indent=2"
+                "--case-indent"
+              ];
+              includes = [ "*.sh" ];
+            };
+          };
+        };
+      };
 
       checks.${system}.niri-config =
         let

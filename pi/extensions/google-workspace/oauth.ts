@@ -1,11 +1,4 @@
-/**
- * Google OAuth 2.0 — authorization code + PKCE over a loopback redirect.
- *
- * `access_type=offline` with `prompt=consent select_account` forces both the
- * account chooser and a refresh token on every sign-in, which is what makes
- * several Google accounts (personal and Workspace-managed) first-class here:
- * each sign-in lands in its own record keyed by the account's email.
- */
+// prompt=consent select_account forces the chooser and a refresh token, so each Google account gets its own record.
 import { spawn } from "node:child_process";
 import { createServer, type Server } from "node:http";
 import type { ClientCredentials } from "./store.ts";
@@ -13,7 +6,6 @@ import type { ClientCredentials } from "./store.ts";
 export const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 export const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
-/** Scope groups, so `/google add --scopes=drive,sheets` stays readable. */
 export const SCOPE_GROUPS: Record<string, string> = {
 	drive: "https://www.googleapis.com/auth/drive",
 	sheets: "https://www.googleapis.com/auth/spreadsheets",
@@ -76,16 +68,10 @@ export function buildAuthUrl(opts: {
 export type Loopback = {
 	port: number;
 	redirectUri: string;
-	/** Resolves with the authorization code, rejects on error/timeout/cancel. */
 	waitForCode: (signal?: AbortSignal) => Promise<string>;
 	close: () => void;
 };
 
-/**
- * Binding the loopback port *before* building the auth URL keeps the redirect
- * URI exact, which Web-application OAuth clients require. Desktop clients
- * accept any loopback port, so the fallback search is safe either way.
- */
 export async function openLoopback(state: string, preferredPort = 8765, attempts = 24): Promise<Loopback> {
 	let server: Server | undefined;
 	let port = 0;
@@ -102,7 +88,8 @@ export async function openLoopback(state: string, preferredPort = 8765, attempts
 			port = candidate;
 		}
 	}
-	if (!server) throw new Error(`Could not bind a loopback port on 127.0.0.1:${preferredPort}-${preferredPort + attempts - 1}`);
+	if (!server)
+		throw new Error(`Could not bind a loopback port on 127.0.0.1:${preferredPort}-${preferredPort + attempts - 1}`);
 
 	let settle: { resolve: (code: string) => void; reject: (err: Error) => void } | undefined;
 	const codePromise = new Promise<string>((resolve, reject) => {
@@ -144,9 +131,7 @@ export async function openLoopback(state: string, preferredPort = 8765, attempts
 	const close = () => {
 		try {
 			server.close();
-		} catch {
-			/* already closed */
-		}
+		} catch {}
 	};
 
 	return {
@@ -155,7 +140,10 @@ export async function openLoopback(state: string, preferredPort = 8765, attempts
 		close,
 		waitForCode: (signal?: AbortSignal) =>
 			new Promise<string>((resolve, reject) => {
-				const timer = setTimeout(() => reject(new Error("Timed out after 5 minutes waiting for the browser.")), 300_000);
+				const timer = setTimeout(
+					() => reject(new Error("Timed out after 5 minutes waiting for the browser.")),
+					300_000,
+				);
 				const onAbort = () => reject(new Error("Sign-in cancelled."));
 				signal?.addEventListener("abort", onAbort, { once: true });
 				codePromise.then(
@@ -175,13 +163,10 @@ export async function openLoopback(state: string, preferredPort = 8765, attempts
 }
 
 export function openInBrowser(url: string): boolean {
-	const command =
-		process.platform === "darwin" ? "open" : process.platform === "win32" ? "cmd" : "xdg-open";
+	const command = process.platform === "darwin" ? "open" : process.platform === "win32" ? "cmd" : "xdg-open";
 	const args = process.platform === "win32" ? ["/c", "start", "", url] : [url];
 	try {
 		const child = spawn(command, args, { detached: true, stdio: "ignore" });
-		// A missing opener (headless session, no xdg-open) emits an async 'error';
-		// without a listener that would take the whole pi process down.
 		child.on("error", () => {});
 		child.unref();
 		return true;
@@ -236,7 +221,6 @@ export async function refreshAccessToken(opts: {
 	return postToken(body, opts.signal);
 }
 
-/** Identity claims of an ID token. `hd` presence marks a Workspace-managed account. */
 export function claimsFromIdToken(idToken: string | undefined): {
 	email?: string;
 	name?: string;
@@ -275,8 +259,7 @@ export function describeAuthError(error: string, description?: string | null): s
 
 export function describeTokenError(payload: Record<string, unknown>): string {
 	const error = typeof payload.error === "string" ? payload.error : "unknown_error";
-	const description =
-		typeof payload.error_description === "string" ? payload.error_description : undefined;
+	const description = typeof payload.error_description === "string" ? payload.error_description : undefined;
 	const suffix = description ? ` — ${description}` : "";
 	switch (error) {
 		case "invalid_grant":
@@ -303,7 +286,6 @@ export function parseScopes(value: string): string[] {
 	return out;
 }
 
-/** Short group names for UI, e.g. "drive, sheets" — derived from granted scope URLs. */
 export function scopeLabels(scopes: string[]): string {
 	const known = Object.entries(SCOPE_GROUPS)
 		.filter(([, url]) => scopes.includes(url))

@@ -30,8 +30,14 @@ extend_right() {
 }
 
 case "${1:-}" in
-  1) extend_left; exit 0 ;;
-  2) extend_right; exit 0 ;;
+  1)
+    extend_left
+    exit 0
+    ;;
+  2)
+    extend_right
+    exit 0
+    ;;
 esac
 
 if pgrep -x wl-mirror >/dev/null; then

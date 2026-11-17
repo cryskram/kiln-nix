@@ -43,10 +43,7 @@ PACKAGES = os.path.join(REPO_ROOT, "pi", "packages.nix")
 
 FAKE_HASH = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
-# pname (attr used for `nix build .#<name>`) -> upstream repo + pin shape.
 EXTENSIONS = [
-    # rpiv-mono monorepo: one shared version/tag/src for both extensions,
-    # but each extension has its own npmHash.
     {
         "name": "rpiv",
         "repo": ("juicesharp", "rpiv-mono"),
@@ -158,8 +155,6 @@ def find_block(text, anchor):
     i = text.find(anchor)
     if i < 0:
         die(f"cannot find anchor {anchor!r} in {PACKAGES} — file layout changed?")
-    # Balance from the brace the anchor itself opens (search one char back so
-    # an anchor ending in '{' finds it).
     last_end = i + len(anchor) - 1
 
     while True:
@@ -185,7 +180,7 @@ def find_block(text, anchor):
         end = j + matched + 1
         if end < len(text) and text[end] == ";":
             return (i, end + 1)
-        if end < len(text) and text[end] == ":":  # `}:` lambda arrow
+        if end < len(text) and text[end] == ":":
             last_end = end + 1
             continue
         return (i, end)
@@ -324,7 +319,6 @@ def main():
     text = open(PACKAGES).read()
     regions = regions_of(text)
 
-    # --- report -----------------------------------------------------------
     print("checking latest releases (gh api)…\n")
     outdated = []
     for ext in EXTENSIONS:
@@ -346,7 +340,6 @@ def main():
     if not outdated:
         print("\nall extensions up to date.")
 
-    # --- --check ----------------------------------------------------------
     if args.check:
         print("\nverifying pins by building each extension…")
         for ext in EXTENSIONS:
@@ -355,7 +348,6 @@ def main():
                 print(f"  {name:26s} {'ok' if r.returncode == 0 else 'FAILED'}")
         sys.exit(0)
 
-    # --- --rehash ---------------------------------------------------------
     if args.rehash:
         print("\nre-capturing npm hashes…")
         for ext in EXTENSIONS:
@@ -368,10 +360,9 @@ def main():
               "  sudo nixos-rebuild switch --flake .#nixos --accept-flake-config")
         return
 
-    # --- select -----------------------------------------------------------
     child_names = {c for e in EXTENSIONS for c in e.get("children", [])}
     todo = {n: d for n, d in outdated if n in wanted}
-    if wanted & child_names:  # --update rpiv-* maps onto the shared rpiv pin
+    if wanted & child_names:
         for n, d in outdated:
             if n == "rpiv":
                 todo["rpiv"] = d
@@ -382,7 +373,6 @@ def main():
             print("\nnothing to update (pass --update-all or --update <name> to apply).")
         return
 
-    # --- apply ------------------------------------------------------------
     print()
     for ext in EXTENSIONS:
         name = ext["name"]
@@ -416,7 +406,6 @@ def main():
         if ext.get("deps"):
             text = capture_ext(text, ext)
 
-    # --- validate ---------------------------------------------------------
     if not args.no_validate:
         _validate()
 

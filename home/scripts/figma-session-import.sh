@@ -25,15 +25,32 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --kill) KILL=1 ;;
     --dry-run) DRY=1 ;;
-    --chrome-profile) CHROME_PROFILE="${2:?--chrome-profile needs a directory}"; CHROME_DB="$CHROME_PROFILE/Cookies"; shift ;;
-    -h|--help) usage; exit 0 ;;
-    *) echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
+    --chrome-profile)
+      CHROME_PROFILE="${2:?--chrome-profile needs a directory}"
+      CHROME_DB="$CHROME_PROFILE/Cookies"
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown option: $1" >&2
+      usage >&2
+      exit 2
+      ;;
   esac
   shift
 done
 
-[[ -f "$APP_DB" ]] || { echo "error: figma-linux profile not found at $APP_DB" >&2; exit 1; }
-[[ -f "$CHROME_DB" ]] || { echo "error: Chrome cookie DB not found at $CHROME_DB" >&2; exit 1; }
+[[ -f "$APP_DB" ]] || {
+  echo "error: figma-linux profile not found at $APP_DB" >&2
+  exit 1
+}
+[[ -f "$CHROME_DB" ]] || {
+  echo "error: Chrome cookie DB not found at $CHROME_DB" >&2
+  exit 1
+}
 
 if pgrep -f "figma[-]linux/resources/app" >/dev/null; then
   if [[ $KILL -eq 1 ]]; then
@@ -43,7 +60,10 @@ if pgrep -f "figma[-]linux/resources/app" >/dev/null; then
       pgrep -f "figma[-]linux/resources/app" >/dev/null || break
       sleep 0.25
     done
-    pgrep -f "figma[-]linux/resources/app" >/dev/null && { echo "error: figma-linux did not exit" >&2; exit 1; }
+    pgrep -f "figma[-]linux/resources/app" >/dev/null && {
+      echo "error: figma-linux did not exit" >&2
+      exit 1
+    }
   else
     echo "error: figma-linux is running; close it or pass --kill" >&2
     exit 1
@@ -75,7 +95,7 @@ cp "$CHROME_DB" "$TMPDIR_IMPORT/Cookies"
 [[ -f "$CHROME_DB-shm" ]] && cp "$CHROME_DB-shm" "$TMPDIR_IMPORT/Cookies-shm"
 
 CHROME_SECRET="$CHROME_SECRET" APP_DB="$APP_DB" CHROME_COPY="$TMPDIR_IMPORT/Cookies" DRY="$DRY" \
-python3 <<'PY'
+  python3 <<'PY'
 import hashlib, os, sqlite3, subprocess, time
 
 secret = os.environ["CHROME_SECRET"].encode()

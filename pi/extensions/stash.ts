@@ -1,37 +1,4 @@
-/**
- * Editor stash — `Alt+S` parks the draft you were typing and hands back a clean
- * editor; `Alt+S` again gives it back.
- *
- * This is the one feature of pi-powerline-footer worth keeping without the
- * footer. Same four-state toggle as its README described:
- *
- *   | Editor   | Stash | Alt+S                               |
- *   |----------|-------|-------------------------------------|
- *   | has text | empty | stash the text, clear the editor    |
- *   | empty    | set   | restore it, and pop the stash       |
- *   | has text | set   | replace the stash with the new text |
- *   | empty    | empty | "Nothing to stash"                  |
- *
- * A stash is never restored behind your back: agent runs do not touch it, only
- * an explicit toggle or history pick does. Stashing while the agent is busy is
- * the main use case — park the long prompt, ask a quick question instead.
- *
- * Storage has two tiers, both pi-native:
- *   - Active stash: a `custom` session entry (`pi.appendEntry`), which is kept
- *     out of model context. It therefore survives `/reload` and resume, and
- *     follows the branch it was created on rather than leaking into a new one.
- *   - Recent drafts: `$PI_CODING_AGENT_DIR/stash-history.json`, newest first,
- *     bounded, written atomically at mode 0600 (a draft can hold anything).
- *
- * Commands: `/stash` (toggle, same as the shortcut), `/stash-history` (pick a
- * past draft, Replace or Append when the editor already has text),
- * `/stash-clear`.
- *
- * Declarative: loaded via modules/core.nix `programs.pi.coding-agent.extensions`.
- * The shortcut fires only while the default editor has focus, so it cannot
- * shadow `/tree`, selector, or model-picker keys.
- */
-
+// Alt+S parks the editor draft and restores it; the active stash is a session entry, so /reload and resume keep it.
 import { chmodSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -47,7 +14,6 @@ type Draft = {
 	at: string;
 };
 
-/** The active stash of the current session branch. */
 let active: Draft | undefined;
 
 function agentDir(): string {
@@ -64,14 +30,16 @@ function readHistory(): Draft[] {
 		if (!Array.isArray(parsed)) return [];
 		return parsed.filter(
 			(entry): entry is Draft =>
-				typeof entry === "object" && entry !== null && typeof (entry as Draft).text === "string" && (entry as Draft).text.trim() !== "",
+				typeof entry === "object" &&
+				entry !== null &&
+				typeof (entry as Draft).text === "string" &&
+				(entry as Draft).text.trim() !== "",
 		);
 	} catch {
 		return [];
 	}
 }
 
-/** Newest first, no duplicates, bounded. Atomic so a draft is never half-written. */
 function pushHistory(draft: Draft): void {
 	const next = [draft, ...readHistory().filter((entry) => entry.text !== draft.text)].slice(0, HISTORY_LIMIT);
 	try {
@@ -80,9 +48,7 @@ function pushHistory(draft: Draft): void {
 		writeFileSync(tmp, `${JSON.stringify(next, null, 2)}\n`, { mode: 0o600 });
 		renameSync(tmp, historyPath());
 		chmodSync(historyPath(), 0o600);
-	} catch {
-		// History is a convenience; never block a stash on it.
-	}
+	} catch {}
 }
 
 function lineCount(text: string): number {
@@ -110,34 +76,29 @@ function ago(iso: string): string {
 	return days === 1 ? "yesterday" : `${days}d ago`;
 }
 
-/** Footer indicator: `stash 12l`, gone when nothing is stashed. */
 function publish(ctx: ExtensionContext): void {
 	if (!ctx.hasUI) return;
 	try {
 		ctx.ui.setStatus(STATUS_KEY, active ? `stash ${lineCount(active.text)}l` : undefined);
-	} catch {
-		// Footer bookkeeping must never break the toggle.
-	}
+	} catch {}
 }
 
-/** Mirror the stash into the session branch so /reload and resume keep it. */
 function persist(pi: ExtensionAPI, draft: Draft | undefined): void {
 	active = draft;
 	try {
 		pi.appendEntry(STASH_ENTRY, draft);
-	} catch {
-		// A session that refuses entries still gets in-memory stashing.
-	}
+	} catch {}
 }
 
-/** Last stash entry on the active branch, so branches cannot leak into each other. */
 function fromBranch(ctx: ExtensionContext): Draft | undefined {
 	const entries = ctx.sessionManager.getBranch();
 	for (let index = entries.length - 1; index >= 0; index -= 1) {
 		const entry = entries[index] as { type?: string; customType?: string; data?: UnknownDraft };
 		if (entry?.type !== "custom" || entry.customType !== STASH_ENTRY) continue;
 		const data = entry.data;
-		return typeof data?.text === "string" && data.text.trim() !== "" ? { text: data.text, at: typeof data.at === "string" ? data.at : new Date().toISOString() } : undefined;
+		return typeof data?.text === "string" && data.text.trim() !== ""
+			? { text: data.text, at: typeof data.at === "string" ? data.at : new Date().toISOString() }
+			: undefined;
 	}
 	return undefined;
 }
@@ -156,7 +117,10 @@ function toggle(pi: ExtensionAPI, ctx: ExtensionContext): void {
 		ctx.ui.setEditorText("");
 		pushHistory(draft);
 		publish(ctx);
-		ctx.ui.notify(replacing ? `Stash updated · ${describe(draftText)}` : `Stashed ${describe(draftText)} · Alt+S to restore`, "info");
+		ctx.ui.notify(
+			replacing ? `Stash updated · ${describe(draftText)}` : `Stashed ${describe(draftText)} · Alt+S to restore`,
+			"info",
+		);
 		return;
 	}
 
@@ -182,9 +146,7 @@ export default function (pi: ExtensionAPI) {
 		active = undefined;
 		try {
 			ctx.ui.setStatus(STATUS_KEY, undefined);
-		} catch {
-			// Shutdown cleanup stays quiet.
-		}
+		} catch {}
 	});
 
 	pi.registerShortcut("alt+s", {
