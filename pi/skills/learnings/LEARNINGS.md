@@ -2,6 +2,21 @@
 
 Reverse chronological. Newest on top.
 
+## 2026-11-17 — Themes: own surfaces without a picker, only *offer* themes to apps that have one (preference) — `theme`
+
+- What: Everforest replaces Gruvbox; `theme/tokens.nix` now selects one `theme/palettes/<name>.nix` (common shape: `accents`, `colors`, `apps`), so a theme switch is one line. Vageesh rotates themes (Tokyo Night → Catppuccin → Gruvbox → Everforest), so expect more.
+- Why/Context: explicit ask: "dont set a hard setting for zed… i want that freedom to change theme within the editor". Zed gets `~/.config/zed/themes/everforest.json` only; its `settings.json` stays user-owned. Same spirit for pi `/theme`, Dux theme picker, VS Code/Electron apps.
+- How/Apply: consumers use role names (`accent-primary`) or neutral accents (`palette.blue`), never `bg0_h`/`orange-bright`. App-owned state that pins a palette (Dux `customThemeFile`, Hyprland `dms/*.lua`) must self-heal on activation — see `docs/decisions/theme-everforest.md`.
+
+Source: Everforest switch session 2026-11-17.
+
+## 2026-11-17 — `callPackage` on a file returning an attrset adds `override`/`overrideDerivation` (gotcha) — `nix`
+
+- What: `pkgs.callPackage ../theme/wallpapers.nix { }` returning `{ gruvbox = […]; everforest = […]; }` broke `concatMapAttrs` with "expected a list but found a function" — callPackage injects `override` attrs into any attrset result.
+- How/Apply: for data files (not derivations) use `import ./file.nix { inherit (pkgs) fetchurl; }`.
+
+Source: flake check failure during the Everforest switch.
+
 ## 2026-11-17 — Claude Code settings now owned by `home/claude-code.nix` (decision) — `dev/claude`
 
 - What: `programs.claude-code` now sets `settings` (model, effort, theme, `attribution.commit/pr = ""`, statusLine, herdr SessionStart hook) and `context` (global CLAUDE.md: no co-author lines); `~/.claude/settings.json` + `CLAUDE.md` are read-only store links.
