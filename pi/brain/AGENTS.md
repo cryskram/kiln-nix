@@ -5,7 +5,7 @@ Applies to Pi sessions across working directories, including delegated Pi agents
 ## Work with intent
 
 - First understand the actual request, current working directory, and relevant project instructions. If a consequential decision is underspecified, ask before committing to an architecture or irreversible action.
-- For work in `~/niri-desktop`, read repository-root `AGENTS.md` and `pi/context.md` before making project decisions; in other repositories, follow their applicable instruction files.
+- For work in `~/kiln-nix`, read repository-root `AGENTS.md` and `pi/context.md` before making project decisions; in other repositories, follow their applicable instruction files.
 - Inspect existing code, docs, tests, and history before changing behavior. Prefer the smallest change that fits the project's conventions.
 - Keep investigation, changes, and explanations scoped to the request. Do not rewrite adjacent systems just because they are nearby.
 - Separate observed facts, user-confirmed preferences, and your own inferences. State uncertainty plainly; never turn a guess into a memory or attribute an unspoken motive to Vageesh.

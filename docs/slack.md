@@ -54,9 +54,9 @@ shell-evaluation path.
 
 ```bash
 umask 077
-printf '%s' 'xoxc-replace-me' > ~/niri-desktop/secrets/slack-xoxc-token
-printf '%s' 'xoxd-replace-me' > ~/niri-desktop/secrets/slack-xoxd-token
-ls -l ~/niri-desktop/secrets/slack-{xoxc,xoxd}-token   # expect -rw-------
+printf '%s' 'xoxc-replace-me' > ~/kiln-nix/secrets/slack-xoxc-token
+printf '%s' 'xoxd-replace-me' > ~/kiln-nix/secrets/slack-xoxd-token
+ls -l ~/kiln-nix/secrets/slack-{xoxc,xoxd}-token   # expect -rw-------
 ```
 
 `SLACK_MCP_SECRETS_DIR` relocates the directory; exporting
@@ -128,7 +128,7 @@ Scopes** (`search:read`, `*:history`, `*:read`, `im:write`, `mpim:write`,
 
 ```bash
 umask 077
-printf '%s' 'xoxp-replace-me' > ~/niri-desktop/secrets/slack-mcp-token
+printf '%s' 'xoxp-replace-me' > ~/kiln-nix/secrets/slack-mcp-token
 ```
 
 Upstream priority is `xoxp` > `xoxb` > `xoxc/xoxd`, so the app token wins over a
@@ -161,11 +161,11 @@ server serves MCP by hand. A real credential is required — it exits with
 
 ```bash
 BIN=$(nix build --no-link --print-out-paths --impure --expr \
-  'let f = builtins.getFlake (toString /home/vageesh/niri-desktop);
+  'let f = builtins.getFlake (toString /home/vageesh/kiln-nix);
        p = f.inputs.nixpkgs.legacyPackages.x86_64-linux;
-   in p.callPackage /home/vageesh/niri-desktop/pkgs/slack-mcp-server.nix {}')/bin/slack-mcp-server
-export SLACK_MCP_XOXC_TOKEN="$(cat ~/niri-desktop/secrets/slack-xoxc-token)"
-export SLACK_MCP_XOXD_TOKEN="$(cat ~/niri-desktop/secrets/slack-xoxd-token)"
+   in p.callPackage /home/vageesh/kiln-nix/pkgs/slack-mcp-server.nix {}')/bin/slack-mcp-server
+export SLACK_MCP_XOXC_TOKEN="$(cat ~/kiln-nix/secrets/slack-xoxc-token)"
+export SLACK_MCP_XOXD_TOKEN="$(cat ~/kiln-nix/secrets/slack-xoxd-token)"
 printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized"}' \

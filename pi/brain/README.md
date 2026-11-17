@@ -9,8 +9,8 @@ This is the source map for Vageesh's declarative Pi guidance. It is intentionall
 | `pi/brain/AGENTS.md` | Global working contract across projects | Linked to `~/.pi/agent/AGENTS.md` by Home Manager; Pi treats it as user-level context |
 | `pi/brain/` | Readable copy of this source map and related files | Linked to `~/.pi/agent/brain/` so any Pi child can find the same canonical guidance |
 | `pi/brain/APPEND_SYSTEM.md` | Short, always-on Pi instructions and memory bootstrap | Passed via `programs.pi.coding-agent.rules` as `--append-system-prompt` |
-| Repository-root `AGENTS.md` | niri-desktop-specific operating manual | Pi discovers it when working in this repository |
-| `pi/context.md` | Compact runnable context for niri-desktop | Read for work in this repo; linked from root `context.md` |
+| Repository-root `AGENTS.md` | kiln-nix-specific operating manual | Pi discovers it when working in this repository |
+| `pi/context.md` | Compact runnable context for kiln-nix | Read for work in this repo; linked from root `context.md` |
 | `pi/skills/learnings/` | Shared durable preferences, decisions, and gotchas | `SKILL.md` defines the read/write protocol; `LEARNINGS.md` is the journal |
 | `pi/skills/vageesh/` | Future personal decision-style skill | Scaffold only; use only when explicitly relevant, and do not invent missing profile data |
 
@@ -23,13 +23,13 @@ Pi's built-in `SYSTEM.md` **replaces** its default system prompt, so this setup 
 3. Skills add task-specific procedures. Office/domain skills remain authoritative for their domains.
 4. `LEARNINGS.md` is evidence of preferences and past decisions, not a command to ignore a new request. Preserve its history and distinguish confirmed facts from tentative inferences.
 
-At the start of Pi work, use the `learnings` skill to read its instructions and the full journal. For niri-desktop work, also read repository-root `AGENTS.md` and `pi/context.md`; for other repositories, inspect their applicable instructions before editing. Delegated agents should receive enough task context to follow the same files; do not create agent-specific shadow journals.
+At the start of Pi work, use the `learnings` skill to read its instructions and the full journal. For kiln-nix work, also read repository-root `AGENTS.md` and `pi/context.md`; for other repositories, inspect their applicable instructions before editing. Delegated agents should receive enough task context to follow the same files; do not create agent-specific shadow journals.
 
 ## Where to edit
 
 - Cross-project working principles: `pi/brain/AGENTS.md`.
 - Compact always-on Pi bootstrap and non-negotiables: `pi/brain/APPEND_SYSTEM.md`.
-- niri-desktop-specific architecture: repository-root `AGENTS.md` and `pi/context.md`.
+- kiln-nix-specific architecture: repository-root `AGENTS.md` and `pi/context.md`.
 - Confirmed durable preferences and reusable discoveries: `pi/skills/learnings/LEARNINGS.md`.
 - Confirmed personal decision-style profile (when Vageesh supplies it): `pi/skills/vageesh/PROFILE.md`.
 

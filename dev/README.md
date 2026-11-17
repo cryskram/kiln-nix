@@ -1,6 +1,6 @@
 # dev — personal devenv environments
 
-This directory holds personal development environments that live in `~/niri-desktop` and do NOT modify company repositories until approval.
+This directory holds personal development environments that live in `~/kiln-nix` and do NOT modify company repositories until approval.
 
 Structure per `DEV_ENVIRONMENT.md` §12:
 
@@ -36,7 +36,7 @@ loader path, so `import cv2` (and therefore `import krutrim_cloud`) fails with
 pydub/moviepy. Do **not** `pip install` into the shell — use the project venv:
 
 ```bash
-cp -r ~/niri-desktop/dev/templates/python-ai/. ~/my-ai-project/
+cp -r ~/kiln-nix/dev/templates/python-ai/. ~/my-ai-project/
 cd ~/my-ai-project && direnv allow
 uv pip install krutrim-cloud
 python -c 'import krutrim_cloud, cv2'   # both verified importable
@@ -61,8 +61,8 @@ Keep the company repo untouched. Create a personal env here:
 ```bash
 # dev/company/project-a.nix imports the appropriate shared/ fragment
 # then in the company repo:
-echo "source $(realpath ~/niri-desktop/dev/company/project-a)/.devenv" > .envrc   # or via direnv
-# or use: direnv with `source ~/niri-desktop/dev/company/project-a/.envrc`
+echo "source $(realpath ~/kiln-nix/dev/company/project-a)/.devenv" > .envrc   # or via direnv
+# or use: direnv with `source ~/kiln-nix/dev/company/project-a/.envrc`
 ```
 
 See `dev/shared/` and `dev/company/README.md`.

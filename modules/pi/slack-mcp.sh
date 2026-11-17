@@ -1,5 +1,5 @@
 # Credentials come from gitignored files; upstream prefers xoxp > xoxb > xoxc/xoxd, so only the matching route is exported.
-secrets_dir="${SLACK_MCP_SECRETS_DIR:-$HOME/niri-desktop/secrets}"
+secrets_dir="${SLACK_MCP_SECRETS_DIR:-$HOME/kiln-nix/secrets}"
 
 read_secret() {
   tr -d '\r\n' <"$secrets_dir/$1"

@@ -1,5 +1,5 @@
 # Personal devenv for a company checkout: copy to dev/company/<project>.nix, never into the company repo.
-# Use with: devenv --file ~/niri-desktop/dev/company/<project>.nix shell
+# Use with: devenv --file ~/kiln-nix/dev/company/<project>.nix shell
 { pkgs, ... }:
 {
   imports = [ ../shared/go.nix ];

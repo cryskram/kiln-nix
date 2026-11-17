@@ -28,15 +28,15 @@ Usage from company repo checkout (e.g., `~/work/company/project-a`):
 
 ```bash
 # 1. Create a direnv link that points to this env without touching company repo
-echo "source ~/niri-desktop/dev/company/project-a/.envrc" > ~/work/company/project-a/.envrc.personal
+echo "source ~/kiln-nix/dev/company/project-a/.envrc" > ~/work/company/project-a/.envrc.personal
 # or use a shell hook:
 # In ~/work/company/project-a, run:
-#   devenv shell --impure --option pure-eval false --file ~/niri-desktop/dev/company/project-a.nix
+#   devenv shell --impure --option pure-eval false --file ~/kiln-nix/dev/company/project-a.nix
 
 # Recommended: use `devenv` directly with external file:
-#   devenv --file ~/niri-desktop/dev/company/project-a.nix shell
+#   devenv --file ~/kiln-nix/dev/company/project-a.nix shell
 # or symlink devenv:
-#   ln -s ~/niri-desktop/dev/company/project-a/devenv.nix ./devenv.nix.personal  # not committed
+#   ln -s ~/kiln-nix/dev/company/project-a/devenv.nix ./devenv.nix.personal  # not committed
 ```
 
 Until company approval, keep all Nix/devenv files here.

@@ -4,7 +4,7 @@
 
 Build a complete, reproducible NixOS developer workstation while keeping project repositories portable for coworkers who do not use Nix.
 
-The existing `niri-desktop` repository is the single source of truth.
+The existing `kiln-nix` repository is the single source of truth.
 
 Do NOT create another repository.
 
@@ -13,7 +13,7 @@ Do NOT create another repository.
 # 1. Architecture
 
 ```text
-                         ~/niri-desktop
+                         ~/kiln-nix
                                │
               ┌────────────────┴────────────────┐
               │                                 │
@@ -41,7 +41,7 @@ Do NOT create another repository.
       + .envrc                        until company approval
               │                             │
               │                    External dev definitions
-              │                    live in niri-desktop
+              │                    live in kiln-nix
               │
               └──────────────────────────────
 ```
@@ -410,7 +410,7 @@ company-project/
 Instead maintain personal development environments inside:
 
 ```text
-~/niri-desktop/dev/
+~/kiln-nix/dev/
 ```
 
 Suggested structure:
@@ -531,7 +531,7 @@ Do not copy private keys or credentials into the Git repository.
 Preferred structure:
 
 ```text
-niri-desktop/
+kiln-nix/
 └── secrets/
 ```
 
@@ -583,7 +583,7 @@ or another proper secret mechanism as appropriate.
 Target structure:
 
 ```text
-niri-desktop/
+kiln-nix/
 ├── flake.nix
 ├── flake.lock
 ├── configuration.nix
@@ -737,5 +737,5 @@ The projects are reproducible.
 
 Company repositories remain untouched until approval.
 
-The existing `niri-desktop` repository remains the only configuration repository.
+The existing `kiln-nix` repository remains the only configuration repository.
 

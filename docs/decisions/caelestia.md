@@ -25,7 +25,7 @@
 
 ## Trade-offs
 
-- The repository is still named `niri-desktop`; niri is now the alternative session.
+- Renamed `niri-desktop` → `kiln-nix` (2026-11-17); niri remains only as the alternative session.
 - quickshell (git) and the Caelestia QML plugin build from source on every input update.
 - The dots' `execs.lua` assumes Arch paths for polkit-gnome and the geoclue demo agent; those calls fail harmlessly, and the NixOS modules provide hyprpolkitagent and the geoclue agent instead.
 - `niri-display-toggle` is niri-specific; under Hyprland, monitors are configured in `user.lua`.

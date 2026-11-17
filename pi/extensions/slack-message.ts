@@ -34,7 +34,7 @@ function apiBase(): string {
 }
 
 function secretsDir(): string {
-	return process.env.SLACK_MCP_SECRETS_DIR ?? join(homedir(), "niri-desktop", "secrets");
+	return process.env.SLACK_MCP_SECRETS_DIR ?? join(homedir(), "kiln-nix", "secrets");
 }
 
 function readSecretFile(path: string): string | undefined {

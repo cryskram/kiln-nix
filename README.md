@@ -1,4 +1,4 @@
-# niri-desktop
+# kiln-nix
 
 Reproducible NixOS desktop and developer workstation: [Hyprland](https://hypr.land) with [Dux Shell](https://github.com/duxlabs-dev/dux-shell) (formerly DankMaterialShell), themed Gruvbox Dark, Wayland-only.
 
@@ -20,8 +20,8 @@ Docs: [`ARCHITECTURE.md`](ARCHITECTURE.md) (how and why) · [`AGENTS.md`](AGENTS
 ## Quick start
 
 ```bash
-git clone https://github.com/cryskram/niri-desktop.git ~/niri-desktop
-cd ~/niri-desktop
+git clone https://github.com/cryskram/kiln-nix.git ~/kiln-nix
+cd ~/kiln-nix
 nix flake check
 sudo nixos-rebuild switch --flake .#nixos --accept-flake-config
 ```
@@ -77,7 +77,7 @@ Added in [`modules/hyprland/user.lua`](modules/hyprland/user.lua):
 
 ```bash
 mkdir ~/my-app && cd ~/my-app
-cp -r ~/niri-desktop/dev/templates/go/. .   # or node, java, python, python-ai, rust
+cp -r ~/kiln-nix/dev/templates/go/. .   # or node, java, python, python-ai, rust
 direnv allow
 ```
 
@@ -88,7 +88,7 @@ Templates are standalone, so a copied project does not depend on this repository
 Secrets never enter Git: `secrets/*` is ignored except its README. Tunnels are used through NetworkManager:
 
 ```bash
-nmcli connection import type wireguard file ~/niri-desktop/secrets/wg0.conf
+nmcli connection import type wireguard file ~/kiln-nix/secrets/wg0.conf
 vpn-toggle    # or Super+Alt+V — also handles Proton VPN and Tailscale
 vpn-status
 ```

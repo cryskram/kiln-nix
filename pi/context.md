@@ -1,4 +1,4 @@
-# Context — niri-desktop for Pi
+# Context — kiln-nix for Pi
 
 This is the runnable context for every pi session in this repo. Read it alongside `AGENTS.md` and the shared brain map at `pi/brain/README.md`. The shared `learnings` skill owns durable preferences; this file describes only the repo's stack, layout, and working conventions.
 

@@ -64,7 +64,7 @@ Tags: short scopes like `nix/flake`, `pi/skill`, `git/commit`, `shell/fish`, `de
 - Why: Abbrs expand visibly and compose with fish completions; aliases hide intent.
 - How: Edit `home/shell.nix` `programs.fish.shellAbbrs`.
 
-Source: user correction in niri-desktop session — requested abbr-first shell.
+Source: user correction in kiln-nix session — requested abbr-first shell.
 ```
 
 ```markdown

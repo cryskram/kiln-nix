@@ -18,12 +18,12 @@ What the module sets, and why:
 
 ```bash
 sudo tailscale up                            # prints an auth URL — open it, approve the device
-sudo tailscale up --hostname=niri-desktop    # optional: this machine's hostname is "nixos"
+sudo tailscale up --hostname=kiln-nix    # optional: this machine's hostname is "nixos"
 sudo tailscale set --operator=vageesh        # only if the CLI reports permission denied
 ```
 
 Enable MagicDNS once in the [admin console](https://login.tailscale.com/admin/dns)
-so peers resolve by name (`ssh niri-desktop`) instead of `100.x.y.z`.
+so peers resolve by name (`ssh kiln-nix`) instead of `100.x.y.z`.
 
 ## Verify
 

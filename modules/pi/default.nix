@@ -195,7 +195,7 @@ in
       "rpiv-todo/config.json".text = builtins.toJSON { collapseKey = "alt+t"; };
       "querion/config.json".text = builtins.toJSON {
         url = "https://querion-plum.vercel.app";
-        tokenFile = "${home}/niri-desktop/secrets/querion-token";
+        tokenFile = "${home}/kiln-nix/secrets/querion-token";
       };
     };
   };
