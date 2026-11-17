@@ -10,6 +10,7 @@
     ./git.nix
     ./ssh.nix
     ./development.nix
+    ./claude-code.nix
     ./applications.nix
     ./spicetify.nix
     ./neovim.nix
