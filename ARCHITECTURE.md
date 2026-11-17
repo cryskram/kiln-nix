@@ -31,12 +31,14 @@ dev/                      devenv fragments and project templates
 - **Unstable packages** come from one overlay in `modules/nix.nix`. It uses `import nixpkgs-unstable { config = prev.config; }` rather than `legacyPackages`, because `legacyPackages` carries nixpkgs' default config and refuses unfree packages such as `claude-code`.
 - **`nix flake check`** runs `Hyprland --verify-config` on the installed Lua files plus the seeded `dms/*.lua` defaults.
 - **Formatting** is `nix fmt` (treefmt with nixfmt, Biome and shfmt).
+- **Rebuilds and GC** go through `nh` (`nh os switch`, flake path preset). Its weekly `nh clean` replaces `nix.gc`: it also removes stale `result`/direnv GC roots and always keeps the last 5 generations, so a quiet week never deletes every rollback.
+- **Ad-hoc tools** come from `nix-index-database` (prebuilt weekly index, no local `nix-index` run): `, <cmd>` runs a command from whichever package provides it, and fish's command-not-found names that package. Nothing is installed, unlike `nix profile`.
 
 ## Visual system
 
 `theme/palettes/*.nix` are the only places colours are defined, and `theme/tokens.nix` picks the active one. Each palette exports the same shape: `accents` (red…purple, exposed as `tokens.palette`), `colors` (roles such as `background`, `accent-primary`, `error`, plus the 16-slot ANSI list), and `apps` (GTK theme, icon colourway, cursor, Neovim colorscheme, pi theme, wallpaper set). Everything themed derives from it: Hyprland borders, Ghostty, fuzzel, swaylock, fish, starship, the Claude Code status line, Spotify (spicetify), Sioyek, GTK/icons/cursor, Neovim, pi, SDDM, and the Dux Shell theme JSON. bat and delta use the `base16` theme, so they follow the terminal palette instead of naming a theme.
 
-Apps whose theme is a user choice (Zed, VS Code, browsers) only get the theme made available, never selected.
+Apps whose theme is a user choice (Zed, VS Code, browsers) only get the theme made available, never selected btop is the middle case: it rewrites `btop.conf` from its own menu, so the repo owns only `btop/themes/kiln.theme` (generated from the palette) and seeds `btop.conf` once with `color_theme = "kiln"`. Picking another theme in btop sticks; staying on `kiln` follows palette switches. zathura and fzf have no theme picker, so their colours are owned outright.
 
 Blur is decorative: Hyprland's default decoration blur shows through Ghostty's `background-opacity`, and Dux Shell manages blur for its own surfaces.
 

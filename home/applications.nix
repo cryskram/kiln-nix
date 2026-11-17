@@ -103,8 +103,41 @@ in
     hunspellDicts.en_US
     hunspellDicts.en_GB-large
     sioyek
-    zathura
   ];
+
+  programs.zathura = {
+    enable = true;
+    options = {
+      font = "${fonts.ui} ${toString fonts.size.md}";
+      default-bg = colors.background;
+      default-fg = colors.foreground;
+      statusbar-bg = colors.background-darkest;
+      statusbar-fg = colors.foreground;
+      inputbar-bg = colors.background-darkest;
+      inputbar-fg = colors.foreground;
+      notification-bg = colors.surface;
+      notification-fg = colors.foreground;
+      notification-error-bg = colors.surface;
+      notification-error-fg = colors.error;
+      notification-warning-bg = colors.surface;
+      notification-warning-fg = colors.warning;
+      highlight-color = colors.warning;
+      highlight-active-color = colors.accent-primary;
+      completion-bg = colors.background-deep;
+      completion-fg = colors.foreground;
+      completion-highlight-bg = colors.surface-elevated;
+      completion-highlight-fg = colors.foreground;
+      index-bg = colors.background;
+      index-fg = colors.foreground;
+      index-active-bg = colors.surface-elevated;
+      index-active-fg = colors.accent-primary;
+      recolor = true;
+      recolor-keephue = true;
+      recolor-lightcolor = colors.background;
+      recolor-darkcolor = colors.foreground;
+      selection-clipboard = "clipboard";
+    };
+  };
 
   xdg.mimeApps = {
     associations.added = {

@@ -1,9 +1,60 @@
-{ pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   tokens = import ../theme/tokens.nix;
   p = tokens.palette;
   p' = tokens.paletteNoHash;
   accent = tokens.colors.accent-primary;
+  c = tokens.colors;
+
+  btopTheme = with c; {
+    main_bg = background;
+    main_fg = foreground;
+    title = foreground;
+    hi_fg = accent-primary;
+    selected_bg = surface;
+    selected_fg = accent-primary;
+    inactive_fg = foreground-dim;
+    graph_text = foreground-muted;
+    meter_bg = surface;
+    proc_misc = accent-secondary;
+    cpu_box = border;
+    mem_box = border;
+    net_box = border;
+    proc_box = border;
+    div_line = border;
+    temp_start = p.green;
+    temp_mid = p.yellow;
+    temp_end = p.red;
+    cpu_start = p.green;
+    cpu_mid = p.yellow;
+    cpu_end = p.red;
+    free_start = p.aqua;
+    free_mid = p.aqua;
+    free_end = p.green;
+    cached_start = p.blue;
+    cached_mid = p.blue;
+    cached_end = p.aqua;
+    available_start = p.yellow;
+    available_mid = p.yellow;
+    available_end = p.orange;
+    used_start = p.orange;
+    used_mid = p.red;
+    used_end = p.red;
+    download_start = p.blue;
+    download_mid = p.aqua;
+    download_end = p.green;
+    upload_start = p.purple;
+    upload_mid = p.orange;
+    upload_end = p.red;
+    process_start = p.green;
+    process_mid = p.yellow;
+    process_end = p.red;
+  };
 
   bold = color: "bold ${color}";
   segment = color: {
@@ -134,7 +185,27 @@ in
     };
   };
 
-  programs.fzf.enable = true;
+  programs.nix-index.enable = true;
+  programs.nix-index-database.comma.enable = true;
+
+  programs.fzf = {
+    enable = true;
+    colors = with c; {
+      fg = foreground-muted;
+      "fg+" = foreground;
+      "bg+" = surface;
+      hl = accent-primary;
+      "hl+" = accent-primary;
+      info = accent-secondary;
+      prompt = accent-primary;
+      pointer = p.orange;
+      marker = p.yellow;
+      spinner = accent-secondary;
+      header = foreground-dim;
+      border = border;
+      gutter = "-1";
+    };
+  };
   programs.zoxide.enable = true;
   programs.eza.enable = true;
   programs.bat = {
@@ -156,5 +227,16 @@ in
     all: false
   '';
 
-  home.packages = [ pkgs.yq-go ];
+  xdg.configFile."btop/themes/kiln.theme".text = lib.concatLines (
+    lib.mapAttrsToList (k: v: "theme[${k}]=\"${v}\"") btopTheme
+  );
+  home.activation.btopSeedConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    cfg="${config.xdg.configHome}/btop/btop.conf"
+    [ -e "$cfg" ] || printf 'color_theme = "kiln"\ntheme_background = false\n' > "$cfg"
+  '';
+
+  home.packages = with pkgs; [
+    yq-go
+    btop
+  ];
 }
