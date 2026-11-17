@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 let
   tokens = import ../theme/tokens.nix;
 
@@ -15,7 +15,7 @@ in
   gtk = {
     enable = true;
     theme = {
-      package = pkgs.${tokens.gtk.package};
+      package = pkgs.${tokens.gtk.package}.override (tokens.gtk.override or { });
       inherit (tokens.gtk) name;
     };
     iconTheme = {
@@ -31,7 +31,7 @@ in
   dconf.settings."org/gnome/desktop/interface".icon-theme = tokens.icons.name;
 
   home.pointerCursor = {
-    package = pkgs.${tokens.cursor.package};
+    package = lib.getAttrFromPath (lib.splitString "." tokens.cursor.package) pkgs;
     inherit (tokens.cursor) name size;
     x11.enable = true;
     gtk.enable = true;

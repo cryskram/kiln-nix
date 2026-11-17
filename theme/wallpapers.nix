@@ -208,4 +208,93 @@ in
           hash = "sha256-LlmwfqTkxdyJiH+3dafZW2cWdOxEPQQ2JOQWTYL5Um4=";
         }
       ];
+
+  catppuccin =
+    collection
+      {
+        repo = "orangci/walls-catppuccin-mocha";
+        rev = "7bfdf10d16ad3a689f9f0cf3a0930da3d1a245a8";
+      }
+      [
+        {
+          name = "sakura-trees-over-river.jpg";
+          path = "sakura-trees-over-river.jpg";
+          hash = "sha256-kEWjWdJ3xPBvK870TT9bw+U9JaTYr8+SA5DIDGe0Unc=";
+        }
+        {
+          name = "mountain-range.jpg";
+          path = "mountain-range.jpg";
+          hash = "sha256-N1UgYq/hsBErCOYtNp/iza8MBD5RhLZy8aQDuMPoRQs=";
+        }
+        {
+          name = "grandfather-tree.jpg";
+          path = "grandfather-tree.jpg";
+          hash = "sha256-OGKyTty7pCPGT+8I2/PEQ2trR+9qsJczybEtK/Fg6tM=";
+        }
+        {
+          name = "nature-valley-1.jpg";
+          path = "nature-valley-1.jpg";
+          hash = "sha256-lzt56qpcQeU7qkSRcDwfnom1rX4cIcqu3T0vOJgGi08=";
+        }
+        {
+          name = "nature-valley-2.jpg";
+          path = "nature-valley-2.jpg";
+          hash = "sha256-fR6lzA0CNXncnkixKPDtRHAMG0kLHdc6xQpX8VQxoGY=";
+        }
+        {
+          name = "deer-glade.jpg";
+          path = "deer-glade.jpg";
+          hash = "sha256-f3TayvXJX1GTWzcuW29ACddAnkamBgPn8Y3ixWABFnA=";
+        }
+        {
+          name = "temple.jpg";
+          path = "temple.jpg";
+          hash = "sha256-5MQPPxIZGhoaIrqb0r/oCQltn+2psDQGRc+T8KHdvXU=";
+        }
+        {
+          name = "river-city.jpg";
+          path = "river-city.jpg";
+          hash = "sha256-YK+PDwhdDSHedZpQuBy1RoXLRZ/TkNDpXgEn2lnYjyE=";
+        }
+        {
+          name = "rooftops.jpg";
+          path = "rooftops.jpg";
+          hash = "sha256-r9DXTiR9WVFthJgPosvys1s1O/3FQI3bfT0KGKNMxDA=";
+        }
+        {
+          name = "dark-forest.jpg";
+          path = "dark-forest.jpg";
+          hash = "sha256-zVYqyWct3jwj98v5+agb4et6Su4W8PvarkcZIeEY+V4=";
+        }
+        {
+          name = "misty-boat.jpg";
+          path = "misty-boat.jpg";
+          hash = "sha256-mLKyJz+WnJ7AIkAaYCHqFb19a6fqi0tLvHOFRFjNQpQ=";
+        }
+        {
+          name = "lighthouse.jpg";
+          path = "lighthouse.jpg";
+          hash = "sha256-Xmr6GLidwB6bFtadlDlmoxRlpE6PNPG/GACk7G/h3eo=";
+        }
+        {
+          name = "train-station.jpg";
+          path = "train-station.jpg";
+          hash = "sha256-GrhWkaLU+moTX0SWvZltuWJhQV8sMHknTwuS8YOLQH0=";
+        }
+        {
+          name = "cabin.png";
+          path = "cabin.png";
+          hash = "sha256-YBxOxmwp2k0NfzXoIcXN3epVScFnjxvfMCm9s2CfgPM=";
+        }
+        {
+          name = "japan-alley.png";
+          path = "japan-alley.png";
+          hash = "sha256-B3rNnOty/YcMNVmDA+TpxDMgaKSlGs66PC7kTDk/n8M=";
+        }
+        {
+          name = "space-piano.png";
+          path = "space-piano.png";
+          hash = "sha256-lXUtaMTO4cW/3/TkeoaBomjNQQ5yXxzaL5SnHGYq4Lw=";
+        }
+      ];
 }

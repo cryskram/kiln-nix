@@ -1,6 +1,6 @@
 # Theme: Everforest Dark (and swappable palettes)
 
-Date: 2026-11-17. Supersedes Gruvbox Dark (`theme-gruvbox.md`) as the global
+Date: 2026-11-17. Superseded 2026-11-18 by Catppuccin Mocha (`theme-catppuccin.md`). Supersedes Gruvbox Dark (`theme-gruvbox.md`) as the global
 visual system (RICE §4, AGENTS §18).
 
 ## Why

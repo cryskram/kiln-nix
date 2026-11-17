@@ -94,6 +94,7 @@ rec {
     };
     nvim = {
       repo = "sainnhe/everforest";
+      name = "everforest";
       colorscheme = "everforest";
       setup = ''
         vim.g.everforest_background = "hard"

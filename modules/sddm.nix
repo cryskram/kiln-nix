@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 let
   tokens = import ../theme/tokens.nix;
   inherit (tokens) colors cursor fonts;
@@ -53,7 +53,7 @@ in
       CursorSize = cursor.size;
     };
     extraPackages = with pkgs; [
-      pkgs.${cursor.package}
+      (lib.getAttrFromPath (lib.splitString "." cursor.package) pkgs)
       kdePackages.qtmultimedia
       kdePackages.qtsvg
       kdePackages.qtvirtualkeyboard

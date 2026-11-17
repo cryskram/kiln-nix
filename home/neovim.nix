@@ -58,6 +58,7 @@ in
       return {
         {
           "${nvim.repo}",
+          name = "${nvim.name}",
           lazy = false,
           priority = 1000,
           config = function()

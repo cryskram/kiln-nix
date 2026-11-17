@@ -102,6 +102,7 @@ rec {
     };
     nvim = {
       repo = "ellisonleao/gruvbox.nvim";
+      name = "gruvbox";
       colorscheme = "gruvbox";
       setup = ''require("gruvbox").setup({ contrast = "hard" })'';
     };

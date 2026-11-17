@@ -1,6 +1,6 @@
 # Single source of truth for the visual system; switching themes means changing `active` and rebuilding.
 let
-  active = import ./palettes/everforest.nix;
+  active = import ./palettes/catppuccin.nix { flavour = "mocha"; };
 in
 rec {
   inherit (active) name slug colors;

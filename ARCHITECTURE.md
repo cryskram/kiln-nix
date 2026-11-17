@@ -17,7 +17,7 @@ modules/                  NixOS modules (imported by modules/default.nix)
   sddm, theme, shell, docker, ollama, direnv, vpn, tailscale, ssh, android
 home/                     Home Manager modules (imported by home/default.nix)
   scripts/*.sh            user scripts, built with writeShellApplication (shellcheck at build time)
-theme/                    tokens.nix (selects the active palette), palettes/ (everforest, gruvbox), wallpapers.nix (pinned collections)
+theme/                    tokens.nix (selects the active palette), palettes/ (catppuccin mocha/macchiato, everforest, gruvbox), wallpapers.nix (pinned collections)
 pi/                       pi assets: extensions (TS), skills, brain, themes, pinned packages
 pkgs/                     packages missing from nixpkgs
 patches/                  patches applied to third-party code
@@ -49,7 +49,7 @@ Hyprland with Dux Shell; why, and what came before, is in [`docs/decisions/hyprl
 - **Hyprland config** (`modules/hyprland/`) is Dux's stock Lua config from the packaged release, so it always matches the installed shell. `hyprland.lua` gets one appended `require("user")`, and `dms/binds.lua` gets Ghostty as the terminal. Everything personal is in `user.lua`.
 - **Seeded fragments.** Dux's Settings UI rewrites `dms/{colors,outputs,cursor,layout,input,windowrules,binds-user}.lua`, so activation copies them from `hypr/dms-defaults/` and keeps a copy in `dms/.seeded/`. A fragment that still matches its seeded copy follows the repo default (so a palette change repaints the borders); one edited in the UI is left alone. Delete it to reseed.
 - **Dux Shell** (`modules/dms-shell.nix`) rewrites its own `settings.json`, so the repo owns only the theme file (`dms/themes/kiln.json`) and seeds settings on a fresh install; if the selected custom theme file no longer exists, activation repoints it to `kiln.json`. `DMS_DISABLE_MATUGEN=1` stops it re-colouring from the wallpaper, and the AiOverviewControl plugin is patched on every activation.
-- **Wallpapers** (`theme/wallpapers.nix`) are named collections fetched by hash (Apeiros-46B/everforest-walls, AngelJumbo/gruvbox-wallpapers) into `~/Pictures/Wallpapers/<set>`. The wallpaper itself is picked in the Dux Shell UI.
+- **Wallpapers** (`theme/wallpapers.nix`) are named collections fetched by hash (orangci/walls-catppuccin-mocha, Apeiros-46B/everforest-walls, AngelJumbo/gruvbox-wallpapers) into `~/Pictures/Wallpapers/<set>`. The wallpaper itself is picked in the Dux Shell UI.
 
 ## Pi
 
