@@ -2,6 +2,15 @@
 
 Reverse chronological. Newest on top.
 
+## 2026-11-18 — Claude Code config is seeded, not owned (preference) — `dev/claude`
+
+- What: `settings.json` and `CLAUDE.md` are written once by `home.activation.claudeSeedConfig` (only when missing or still a store link), then belong to Claude Code and Vageesh; the package, `claude-statusline` (on PATH via the profile) and the `learnings` skill link stay declarative.
+- Why/Context: read-only store links blocked `/config`, `/model`, `/theme` — user: "it is a lil problematic. lets have it normal". Same rule as Zed/btop: apps with their own settings UI get seeded, not locked.
+- How/Apply: to reset to repo defaults, delete the file and rebuild; reference generated scripts by `${config.home.profileDirectory}/bin/…`, never a raw store path, in any file that outlives a generation.
+
+Supersedes: 2026-11-17 — Claude Code settings now owned by `home/claude-code.nix`
+Source: user request 2026-11-18.
+
 ## 2026-11-17 — Themes: own surfaces without a picker, only *offer* themes to apps that have one (preference) — `theme`
 
 - What: Everforest replaces Gruvbox; `theme/tokens.nix` now selects one `theme/palettes/<name>.nix` (common shape: `accents`, `colors`, `apps`), so a theme switch is one line. Vageesh rotates themes (Tokyo Night → Catppuccin → Gruvbox → Everforest), so expect more.
