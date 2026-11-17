@@ -2,6 +2,14 @@
 
 Reverse chronological. Newest on top.
 
+## 2026-11-18 — Debugging Hyprland binds: trace on a spare chord, never replace live ones (gotcha) — `hyprland/binds`
+
+- What: `hyprctl eval` + `hl.unbind`/`hl.bind` to trace Super+X/Print/Super+Space left all three dead for the user until `hyprctl reload`; `wtype` synthetic chords never trigger binds (typed `x` into the focused terminal instead).
+- Why/Context: power menu (Super+X) and screenshot (Print) "didn't work" intermittently; IPC + exec path + key events (libinput) were all fine, failure not reproduced. Unconfirmed lead: Dux powermenu state desync (toggle closes an invisible menu).
+- How/Apply: observe real keys with `stdbuf -oL libinput debug-events` (user is in `input`; without stdbuf the pipe buffers and logs nothing); trace on an unused chord; `hyprctl reload` restores binds. Shell may carry a stale `HYPRLAND_INSTANCE_SIGNATURE` — use `ls -t /run/user/1000/hypr | head -1`.
+
+Source: power menu/screenshot debugging 2026-11-18 — user: "none of these are working now".
+
 ## 2026-11-18 — Claude Code config is seeded, not owned (preference) — `dev/claude`
 
 - What: `settings.json` and `CLAUDE.md` are written once by `home.activation.claudeSeedConfig` (only when missing or still a store link), then belong to Claude Code and Vageesh; the package, `claude-statusline` (on PATH via the profile) and the `learnings` skill link stay declarative.
