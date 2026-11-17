@@ -191,7 +191,7 @@ Pi customization lives in `modules/core.nix` (`programs.pi.coding-agent`):
 * shared Pi brain → `pi/brain/README.md` documents ownership; `pi/brain/AGENTS.md` is installed as user-level `~/.pi/agent/AGENTS.md`; `pi/brain/APPEND_SYSTEM.md` is passed through `rules` as `--append-system-prompt` (never replace Pi's built-in prompt with `SYSTEM.md`)
 * context → `pi/context.md` (runnable project context, <100 lines) + repo-root `context.md` symlink → `pi/context.md`; repository-root `AGENTS.md` is the niri-desktop-specific operating manual; shared preferences and discoveries live in the `learnings` journal
 * prompt templates → intentionally empty (`pi/prompts/.gitkeep`, `promptTemplates = [ ]`) — skills preferred over prompts (see pi docs: skills carry description + on-demand loading)
-* theme → `pi/themes/catppuccin-macchiato.json` (`themes`)
+* theme → `pi/themes/*.json` (`themes`); default `gruvbox-dark`, plus catppuccin-macchiato/mocha, tokyo-night-storm, kanagawa-wave, everforest-dark — switchable at runtime via `/theme`
 * settings → `defaultProvider`/`defaultModel`/`defaultThinkingLevel`/`theme`/`defaultTools` + ergonomic defaults (`enableSkillCommands`, `compaction`, `terminal.showTerminalProgress`, `autocompleteMaxVisible`) + `subagents.defaultModel`/`agentOverrides` (generic, project `.pi/settings.json` can override per-repo)
 
 To add Pi functionality, extend these mechanisms. Do not build a parallel
@@ -421,9 +421,9 @@ The architecture must support additional monitors.
 
 ---
 
-# 18. Catppuccin Macchiato
+# 18. Gruvbox Dark
 
-Catppuccin Macchiato is the global visual system.
+Gruvbox Dark is the global visual system (see `theme/tokens.nix`).
 
 Do not introduce arbitrary colors.
 

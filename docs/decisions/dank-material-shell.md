@@ -41,7 +41,7 @@ What did *not* change — so keybinds, `home/ux.nix`, the `dms.service` unit and
 - the `dms` binary, the unit name, and the IPC surface (APIVersion 28 is wire-compatible)
 - `/etc/xdg/quickshell/dms-plugins` as the system plugin root
 - `DMS_DISABLE_MATUGEN` (verified in 2.0.0's `Theme.qml`), and the custom-theme
-  keys in `theme/dms-macchiato.json` (`primaryContainer`, `backgroundText`, …)
+  keys in `theme/dms-gruvbox.json` (`primaryContainer`, `backgroundText`, …)
 
 What did change — **the config dir**, `~/.config/DankMaterialShell` →
 **`~/.config/dms`** (state/cache/data too). 2.0.0 migrates it itself, but Home
@@ -54,13 +54,13 @@ therefore moves anything the new dir lacks, before the seed runs.
 **The declarative boundary is different — read this before editing.**
 
 - **Repo-owned:** the package/overlay pin, module options,
-  `theme/dms-macchiato.json` (Catppuccin Macchiato mapped to DMS/matugen color
+  `theme/dms-gruvbox.json` (Gruvbox Dark mapped to DMS/matugen color
   keywords), niri keybinds and layer rules.
 - **App-owned: `~/.config/dms/settings.json`** — bar layout, widget
   choices, theme selection. DMS rewrites this file from its own UI, so it is
   deliberately *not* a Home Manager symlink (a read-only store link would break
   every UI change). The module seeds it once — never overwriting — so a fresh
-  system starts on the Macchiato theme.
+  system starts on the Gruvbox Dark theme.
 - `DMS_DISABLE_MATUGEN=1` is set on `dms.service`: matugen would otherwise derive
   colors from the wallpaper and template compositor config fragments, fighting
   both the static palette and the declarative niri config.
@@ -97,7 +97,7 @@ therefore moves anything the new dir lacks, before the seed runs.
   skipping once the file already handles the current shape. Drop both once
   upstream ships a fix: https://github.com/bernardopg/AiOverviewControl
 - **Removed:** the `noctalia` flake input, `home/noctalia.nix`,
-  `noctalia-plugins/opencode-quota/*.luau`, `theme/noctalia-macchiato.json`, and
+  `noctalia-plugins/opencode-quota/*.luau`, `theme/noctalia-*.json`, and
   the `noctalia msg …` keybinds (now `dms ipc call …`, keeping the fuzzel /
   wlogout / swaylock fallbacks).
 - **Locking:** idle and before-sleep now call DMS's lock with swaylock as the

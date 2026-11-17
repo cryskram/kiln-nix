@@ -13,7 +13,7 @@ Single source of truth — clone and rebuild on compatible hardware.
 
 - **Compositor:** Niri scrollable tiling, dynamic workspaces, rounded corners (`12px`), `8px` gaps, rings `2px`
 - **Shell:** DankMaterialShell (Quickshell) — island bar, glass/blur, launcher/control-center/wallpaper/lock
-- **Theme:** Catppuccin Macchiato (centralized tokens, no hard-coded palette)
+- **Theme:** Gruvbox Dark (centralized tokens, no hard-coded palette)
 - **Login:** SDDM Astronaut (Wayland, `QtMultimedia` + Bibata cursor)
 - **Workstation:** `devenv` + `direnv` + Docker, full language toolchains
 
@@ -34,12 +34,12 @@ Requirements: NixOS `26.05` `x86_64`, flakes enabled, Intel graphics, `1920×108
 ## Structure
 
 ```
-flake.nix                — inputs: nixpkgs, unstable, home-manager, pi.nix, catppuccin, spicetify
+flake.nix                — inputs: nixpkgs, unstable, home-manager, pi.nix, spicetify
 configuration.nix        — system (boot, networking, pipewire, locale)
 hardware-configuration.nix — generated, don't edit casually
 modules/                 — core.nix (flake wiring, pi, HM), theme/shell/niri/sddm/docker/direnv/vpn.nix
 home/                    — niri.nix, theme.nix, shell.nix, git.nix, development.nix, ...
-theme/                   — tokens.nix + dms-macchiato.json (DankMaterialShell theme)
+theme/                   — tokens.nix + dms-gruvbox.json (DankMaterialShell theme)
 pi/                      — pi prompts, skills, extensions (mcp-adapter, pi-btw, rpiv-todo/ask-user-question, zentui, pi-subagents, pi-web-access, pi-guard; local jev-router/stash/querion-sync/google-workspace), rules, theme
 dev/                     — personal devenv definitions (shared/, templates/, company/)
 secrets/                 — gitignored VPN/keys (README + .gitkeep tracked)
@@ -185,7 +185,7 @@ sudo nixos-rebuild switch --flake .#nixos --accept-flake-config
 | `nixpkgs` | kernel modules (~10 min) when its version moves | |
 | `nixpkgs-unstable` | usually cached | Hydra builds unstable; this is also where the shell comes from |
 | `pi` | cached | `pi.cachix.org` is in this flake's `nixConfig` |
-| `home-manager`, `catppuccin`, `spicetify-nix` | seconds | config only |
+| `home-manager`, `spicetify-nix` | seconds | config only |
 
 Rule of thumb: `nixpkgs` is the only input that can cost ~10 minutes (kernel modules); everything else is cheap. A reasonable cadence is `nixpkgs` + `home-manager` + `nixpkgs-unstable` every few weeks.
 
@@ -261,7 +261,7 @@ See [Rollback & tags](#rollback--tags) for backing out of an update.
 | Desktop | Terminal | Files |
 |---|---|---|
 | ![desktop](assets/screenshots/01-desktop.png) | ![terminal](assets/screenshots/02-terminal.png) | ![files](assets/screenshots/03-files.png) |
-| Bar + wallpaper + islands | Ghostty + Starship + Catppuccin Macchiato | Nautilus + Tela-circle-dark |
+| Bar + wallpaper + islands | Ghostty + Starship + Gruvbox Dark | Nautilus + Tela-circle-orange-dark |
 
 | Launcher | Control Center | Multi-monitor |
 |---|---|---|

@@ -70,7 +70,7 @@ A beautiful desktop that breaks when a network adapter disappears is not a finis
 
 The visual identity combines:
 
-* Catppuccin Macchiato
+* Gruvbox Dark
 * futuristic operating-system UI
 * mission-control workstation
 * hacker/developer workstation
@@ -525,7 +525,7 @@ evaluated as the alternative and is no longer used anywhere on this machine.
 
 The primary terminal should eventually use:
 
-* Catppuccin Macchiato
+* Gruvbox Dark
 * selected font
 * sensible padding
 * Wayland-native behavior
@@ -834,7 +834,7 @@ Introduce:
 
 Establish:
 
-* Catppuccin Macchiato
+* Gruvbox Dark
 * fonts
 * icons
 * GTK
@@ -1003,7 +1003,7 @@ The desktop is v1.0 when:
 * Nautilus works
 * terminal is polished
 * shell is polished
-* Catppuccin Macchiato is coherent
+* Gruvbox Dark is coherent
 * one-monitor experience is excellent
 * two-monitor operation works
 * validation passes
