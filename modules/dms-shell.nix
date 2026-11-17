@@ -8,6 +8,7 @@
 }:
 let
   tokens = import ../theme/tokens.nix;
+  wallpapers = pkgs.callPackage ../theme/wallpapers.nix { };
   c = tokens.colors;
   p = tokens.palette;
 
@@ -36,7 +37,7 @@ let
     matugen_type = "scheme-content";
   };
 in
-lib.mkIf (config.desktop.shell == "dms") {
+{
   programs.dms-shell = {
     enable = true;
     package = pkgs.dux-shell;
@@ -60,6 +61,10 @@ lib.mkIf (config.desktop.shell == "dms") {
     in
     {
       xdg.configFile."dms/themes/gruvbox-dark.json".text = builtins.toJSON theme;
+
+      home.file = lib.listToAttrs (
+        map (w: lib.nameValuePair "Pictures/Wallpapers/gruvbox/${w.name}" { source = w.path; }) wallpapers
+      );
 
       home.activation.dmsSeedSettings = ''
         cfg="$HOME/.config/dms/settings.json"

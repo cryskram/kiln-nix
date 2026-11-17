@@ -50,7 +50,7 @@ tailscale ping <peer>     # reports whether that path is direct or via DERP
 | Debug | `tailscale ping <peer>`, `tailscale bugreport` |
 
 Also integrated into the fuzzel chooser (`vpn-toggle tailscale`, or pick
-`tailscale (mesh VPN)` from `Mod+Shift+N`) and `vpn-status` reports its state.
+`tailscale (mesh VPN)` from `Super+Alt+V`) and `vpn-status` reports its state.
 Tailscale is not NetworkManager-managed, so it does **not** appear in DMS's VPN
 widget — that widget only lists `nmcli` connections.
 

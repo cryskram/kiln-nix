@@ -23,16 +23,6 @@
 
     pi.url = "github:lukasl-dev/pi.nix";
 
-    caelestia-shell = {
-      url = "github:caelestia-dots/shell";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
-
-    caelestia-dots = {
-      url = "github:caelestia-dots/caelestia";
-      flake = false;
-    };
-
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -91,39 +81,26 @@
         };
       };
 
-      checks.${system} =
+      checks.${system}.hyprland-config =
         let
           nixos = self.nixosConfigurations.nixos.config;
-          home = nixos.home-manager.users.${user};
+          files = pkgs.lib.filterAttrs (
+            name: _: pkgs.lib.hasPrefix "hypr/" name
+          ) nixos.home-manager.users.${user}.xdg.configFile;
         in
-        if nixos.desktop.shell == "dms" then
-          {
-            niri-config = pkgs.runCommand "niri-config-validate" { nativeBuildInputs = [ pkgs.niri ]; } ''
-              niri validate --config ${home.xdg.configFile."niri/config.kdl".source}
-              touch $out
-            '';
-          }
-        else
-          {
-            hyprland-config =
-              let
-                files = pkgs.lib.filterAttrs (
-                  name: _: pkgs.lib.hasPrefix "hypr/" name || pkgs.lib.hasPrefix "caelestia/hypr-" name
-                ) home.xdg.configFile;
-              in
-              pkgs.runCommand "hyprland-config-validate"
-                { nativeBuildInputs = [ nixos.programs.hyprland.package ]; }
-                ''
-                  export HOME=$TMPDIR/home XDG_RUNTIME_DIR=$TMPDIR
-                  ${pkgs.lib.concatMapAttrsStringSep "\n" (name: file: ''
-                    mkdir -p "$HOME/.config/$(dirname ${name})"
-                    cp -rL --no-preserve=mode ${file.source} "$HOME/.config/${name}"
-                  '') files}
-                  Hyprland --verify-config -c $HOME/.config/hypr/hyprland.lua > log 2>&1 || { cat log; exit 1; }
-                  grep -q "config ok" log
-                  touch $out
-                '';
-          };
+        pkgs.runCommand "hyprland-config-validate"
+          { nativeBuildInputs = [ nixos.programs.hyprland.package ]; }
+          ''
+            export HOME=$TMPDIR/home XDG_RUNTIME_DIR=$TMPDIR
+            ${pkgs.lib.concatMapAttrsStringSep "\n" (name: file: ''
+              mkdir -p "$HOME/.config/$(dirname ${name})"
+              cp -rL --no-preserve=mode ${file.source} "$HOME/.config/${name}"
+            '') files}
+            cp -n $HOME/.config/hypr/dms-defaults/* $HOME/.config/hypr/dms/
+            Hyprland --verify-config -c $HOME/.config/hypr/hyprland.lua > log 2>&1 || { cat log; exit 1; }
+            grep -q "config ok" log
+            touch $out
+          '';
 
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs user; };

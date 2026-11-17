@@ -5,21 +5,19 @@ How the repository is put together, and the non-obvious reasons behind it. Code 
 ## Layout
 
 ```
-flake.nix                 inputs, formatter (treefmt), niri config check, the `nixos` system
+flake.nix                 inputs, formatter (treefmt), Hyprland config check, the `nixos` system
 configuration.nix         host: boot, locale, audio, printing, the user account
 hardware-configuration.nix  generated — do not edit
 modules/                  NixOS modules (imported by modules/default.nix)
   nix.nix                 nix settings, GC, nixpkgs-unstable overlay
   core.nix                Home Manager wiring, session variables, desktop services
   pi/                     pi coding agent: default.nix (agent), guard.nix (permissions), mcp.nix (MCP servers)
-  desktop.nix             `desktop.shell` option: caelestia (Hyprland) | dms (niri)
-  hyprland/               Hyprland session: official Caelestia Lua config + user.lua overrides
-  caelestia/              Caelestia shell: package overrides, generated Gruvbox scheme, wallpapers
-  dms-shell.nix           Dux Shell (DMS), the alternative shell
-  niri, sddm, theme, shell, docker, ollama, direnv, vpn, tailscale, ssh, android
+  hyprland/               Hyprland session: Dux Shell's stock Lua config, seeded dms/*.lua, user.lua
+  dms-shell.nix           Dux Shell: theme, wallpapers, settings seed, plugin patch
+  sddm, theme, shell, docker, ollama, direnv, vpn, tailscale, ssh, android
 home/                     Home Manager modules (imported by home/default.nix)
   scripts/*.sh            user scripts, built with writeShellApplication (shellcheck at build time)
-theme/tokens.nix          the visual system: raw Gruvbox palette + semantic roles
+theme/                    tokens.nix (palette + semantic roles), wallpapers.nix (pinned Gruvbox wallpapers)
 pi/                       pi assets: extensions (TS), skills, brain, themes, pinned packages
 pkgs/                     packages missing from nixpkgs
 patches/                  patches applied to third-party code
@@ -31,27 +29,23 @@ dev/                      devenv fragments and project templates
 ## Nix
 
 - **Unstable packages** come from one overlay in `modules/nix.nix`. It uses `import nixpkgs-unstable { config = prev.config; }` rather than `legacyPackages`, because `legacyPackages` carries nixpkgs' default config and refuses unfree packages such as `claude-code`.
-- **`nix flake check`** validates the active compositor config: `Hyprland --verify-config` on the installed Lua files, or `niri validate` on `config.kdl`.
+- **`nix flake check`** runs `Hyprland --verify-config` on the installed Lua files plus the seeded `dms/*.lua` defaults.
 - **Formatting** is `nix fmt` (treefmt with nixfmt, Biome and shfmt).
 
 ## Visual system
 
-`theme/tokens.nix` is the only place colours are defined. `palette` holds raw Gruvbox Dark values; `colors` maps them to roles (`background`, `accent-primary`, `error`, …). Everything themed derives from it: niri borders, Ghostty, fuzzel, swaylock, fish, starship, Spotify (spicetify), Sioyek, the SDDM cursor, the Caelestia scheme (`modules/caelestia/scheme.nix`) and the DMS theme JSON.
+`theme/tokens.nix` is the only place colours are defined. `palette` holds raw Gruvbox Dark values; `colors` maps them to roles (`background`, `accent-primary`, `error`, …). Everything themed derives from it: Hyprland borders, Ghostty, fuzzel, swaylock, fish, starship, Spotify (spicetify), Sioyek, the SDDM cursor, the Dux Shell theme JSON, and the seeded Hyprland border colours.
 
-Blur is decorative. Under Hyprland it comes from the official Caelestia config. Under niri, niri blurs every window and popup; Ghostty cannot request blur under niri, so its translucency (`background-opacity`) relies on niri's window rule. DMS requests blur for its own surfaces through `ext-background-effect`, so only the fuzzel fallback launcher has a layer rule; adding one for DMS double-applies and draws a tinted box around rounded popouts.
+Blur is decorative: Hyprland's default decoration blur shows through Ghostty's `background-opacity`, and Dux Shell manages blur for its own surfaces.
 
 ## Desktop session
 
-`desktop.shell` (`modules/desktop.nix`) selects the session: `caelestia` (Hyprland, default) or `dms` (niri with Dux Shell). Every compositor and shell module is wrapped in `mkIf`, so exactly one compositor, shell, idle manager and bind set is active. `nix flake check` validates whichever is selected (`Hyprland --verify-config` or `niri validate`).
+Hyprland with Dux Shell; why, and what came before, is in [`docs/decisions/hyprland-dms.md`](docs/decisions/hyprland-dms.md).
 
-**Hyprland + Caelestia** follow the official project as closely as possible; why, and the alternatives tried, are in [`docs/decisions/caelestia.md`](docs/decisions/caelestia.md).
-- `modules/hyprland/` links the official Lua config from the `caelestia-dots` input unchanged. Personal settings go only through the hooks the dots read last: `hypr-vars.lua` (generated: apps, cursor) and `user.lua` (monitors, layout cycling, scrolling binds).
-- `modules/caelestia/` builds the official shell. caelestia-cli's bundled `gruvbox` scheme is a teal Material palette, so `scheme.nix` generates a real one from the tokens. The CLI is overridden to ship it, and it also seeds `hypr/scheme/default.lua`.
-- Caelestia owns its state under `~/.local/state/caelestia`; activation seeds the scheme and wallpaper only on first run.
-- Only the CLI's Hyprland applier is enabled: the others would rewrite files Home Manager owns.
-- Wallpapers are fetched by hash and linked file-by-file, because the wallpaper scanner does not follow symlinked directories.
-
-**niri + Dux Shell** (the alternative): Dux Shell rewrites its own `settings.json`, so the repo owns only its theme file; `DMS_DISABLE_MATUGEN=1` stops it re-colouring from the wallpaper.
+- **Hyprland config** (`modules/hyprland/`) is Dux's stock Lua config from the packaged release, so it always matches the installed shell. `hyprland.lua` gets one appended `require("user")`, and `dms/binds.lua` gets Ghostty as the terminal. Everything personal is in `user.lua`.
+- **Seeded fragments.** Dux's Settings UI rewrites `dms/{colors,outputs,cursor,layout,input,windowrules,binds-user}.lua`, so activation copies them from `hypr/dms-defaults/` only when absent. Delete one to reseed it after changing the tokens.
+- **Dux Shell** (`modules/dms-shell.nix`) rewrites its own `settings.json`, so the repo owns only the theme file and seeds settings on a fresh install. `DMS_DISABLE_MATUGEN=1` stops it re-colouring from the wallpaper, and the AiOverviewControl plugin is patched on every activation.
+- **Wallpapers** (`theme/wallpapers.nix`) are fetched by hash from AngelJumbo/gruvbox-wallpapers into `~/Pictures/Wallpapers/gruvbox`.
 
 ## Pi
 

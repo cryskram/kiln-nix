@@ -2,7 +2,6 @@
 {
   imports = [
     inputs.spicetify-nix.homeManagerModules.default
-    ./niri.nix
     ./desktop.nix
     ./theme.nix
     ./shell.nix

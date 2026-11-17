@@ -1,6 +1,6 @@
 # Decision: official Caelestia on Hyprland
 
-Date: 2026-11-17. Replaces niri + Dux Shell as the default session; that pairing remains selectable with `desktop.shell = "dms"`.
+**Status:** Superseded by [`hyprland-dms.md`](hyprland-dms.md) on 2026-11-17. The last state is tagged `caelestia-hyprland` (`git checkout caelestia-hyprland`).
 
 ## Problem
 

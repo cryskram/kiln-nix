@@ -31,12 +31,5 @@ in
       procps
     ] vpnCommon)
     (script "vpn-status" [ jq ] vpnCommon)
-    (script "niri-display-toggle" [
-      jq
-      fuzzel
-      libnotify
-      procps
-      wl-mirror
-    ] "")
   ];
 }

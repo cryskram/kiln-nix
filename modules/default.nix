@@ -3,13 +3,10 @@
     ./nix.nix
     ./core.nix
     ./pi
-    ./desktop.nix
-    ./caelestia
     ./hyprland
     ./dms-shell.nix
     ./theme.nix
     ./shell.nix
-    ./niri.nix
     ./sddm.nix
     ./docker.nix
     ./ollama.nix

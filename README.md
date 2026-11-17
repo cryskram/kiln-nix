@@ -1,15 +1,15 @@
 # niri-desktop
 
-Reproducible NixOS desktop and developer workstation: [Hyprland](https://hypr.land) with the official [Caelestia](https://github.com/caelestia-dots/shell) shell and dotfiles, themed Gruvbox Dark, Wayland-only. [Niri](https://github.com/YaLTeR/niri) with Dux Shell remains one option away.
+Reproducible NixOS desktop and developer workstation: [Hyprland](https://hypr.land) with [Dux Shell](https://github.com/duxlabs-dev/dux-shell) (formerly DankMaterialShell), themed Gruvbox Dark, Wayland-only.
 
 ![NixOS](https://img.shields.io/badge/NixOS-26.05-blue?logo=nixos)
 ![Hyprland](https://img.shields.io/badge/compositor-Hyprland-d65d0e)
-![Shell](https://img.shields.io/badge/shell-Caelestia-504945)
+![Shell](https://img.shields.io/badge/shell-Dux%20Shell-504945)
 
 The Git repository is the single source of truth: clone it and rebuild on compatible hardware.
 
-- **Compositor:** Hyprland 0.57 — dwindle, scrolling, master and monocle layouts, switchable live; official Caelestia Lua config
-- **Shell:** Caelestia (official) — bar, launcher, dashboard, notifications, lock, wallpapers, theme picker
+- **Compositor:** Hyprland 0.57 — dwindle, scrolling, master and monocle layouts, switchable live; Dux Shell's stock Lua config
+- **Shell:** Dux Shell — bar, launcher, control centre, notifications, lock, wallpapers, overview, display profiles
 - **Wallpapers:** 17 curated Gruvbox wallpapers, pinned by hash, in `~/Pictures/Wallpapers/gruvbox`
 - **Theme:** Gruvbox Dark from one set of tokens ([`theme/tokens.nix`](theme/tokens.nix))
 - **Login:** SDDM with the Astronaut theme
@@ -33,7 +33,7 @@ Requires NixOS 26.05 on x86_64 with flakes enabled. Built on Intel graphics at 1
 ```
 flake.nix            inputs, formatter, checks, the `nixos` system
 configuration.nix    host basics (boot, locale, audio, user)
-modules/             NixOS modules — nix, core, pi/, dms-shell, niri, sddm, vpn, …
+modules/             NixOS modules — nix, core, pi/, hyprland/, dms-shell, sddm, vpn, …
 home/                Home Manager modules and scripts/
 theme/tokens.nix     colours, fonts, cursor, icons
 pi/                  pi extensions, skills, brain, themes, pinned packages
@@ -45,34 +45,33 @@ See [`ARCHITECTURE.md`](ARCHITECTURE.md) for details.
 
 ## Keybindings
 
-The official [Caelestia keybinds](https://github.com/caelestia-dots/caelestia/blob/main/hypr/variables.lua) apply unchanged; the essentials:
+Dux Shell's [stock Hyprland binds](https://github.com/duxlabs-dev/dux-shell/blob/master/core/internal/config/embedded/hypr-binds.lua) apply unchanged (`Super+Shift+/` shows them all); the essentials:
 
 | Bind | Action |
 |---|---|
-| tap `Super` | launcher (`>scheme`, `>wallpaper`, `>variant` for theming) |
-| `Super+T` / `Super+W` / `Super+E` / `Super+C` | Ghostty / Chrome / Nautilus / VS Code |
-| `Super+Q` | close window |
-| `Super+1..0`, `Super+Shift+1..0` | go to / move window to workspace |
-| `Super+arrows`, `Super+Shift+arrows` | focus / move window |
-| `Super+F`, `Super+Alt+Space` | fullscreen, toggle floating |
-| `Super+N`, `Super+K` | notifications sidebar, all panels |
-| `Super+L`, `Ctrl+Alt+Delete` | lock, session menu |
-| `Super+V`, `Super+Period` | clipboard history, emoji picker |
-| `Print`, `Super+Shift+S` | full screenshot, frozen region picker |
-| `Super+S`, `Super+M`, `Super+D` | special workspaces: scratch, music, communication |
+| `Super+Space` / `Alt+Space` | launcher / launcher bar |
+| `Super+T` / `Super+Return` | Ghostty |
+| `Super+Q`, `Super+F`, `Super+Shift+T` | close, maximise, toggle floating |
+| `Super+arrows` or `Super+HJKL` | focus; add `Shift` to move the window |
+| `Super+1..9`, `Super+Shift+1..9` | go to / move window to workspace |
+| `Super+Tab` / `Super+O` | overview |
+| `Super+A`, `Super+D`, `Super+M` | control centre, dashboard, media |
+| `Super+V`, `Super+Ctrl+N` | clipboard history, notifications |
+| `Super+Alt+L`, `Super+X` | lock, power menu |
+| `Print`, `Ctrl+Print`, `Alt+Print` | region, full, window screenshot |
+| `Super+P` | cycle display profiles |
+| `Super+S` | scratchpad workspace |
 
-Added in `modules/hyprland/user.lua`:
+Added in [`modules/hyprland/user.lua`](modules/hyprland/user.lua):
 
 | Bind | Action |
 |---|---|
 | `Super+Shift+Space` | cycle layout: dwindle → scrolling → master → monocle |
-| `Super+[` / `Super+]` | scrolling: column width down / up through presets |
+| `Super+[` / `Super+]` | scrolling: column width down / up through presets (dwindle: Dux's split preselect) |
 | `Super+Shift+[` / `Super+Shift+]` | scrolling: swap column left / right |
 | `Super+Ctrl+[` / `Super+Ctrl+]` | scrolling: pull window into / push out of the neighbouring column |
 | `Super+\` / `Super+Shift+\` | scrolling: fit visible columns / promote window to its own column |
-| `Super+Shift+N` | VPN chooser |
-
-To switch to niri with Dux Shell: `desktop.shell = "dms";` in `modules/desktop.nix`, then rebuild.
+| `Super+Alt+V` | VPN chooser |
 
 ## Development environments
 
@@ -90,7 +89,7 @@ Secrets never enter Git: `secrets/*` is ignored except its README. Tunnels are u
 
 ```bash
 nmcli connection import type wireguard file ~/niri-desktop/secrets/wg0.conf
-vpn-toggle    # or Mod+Shift+N — also handles Proton VPN and Tailscale
+vpn-toggle    # or Super+Alt+V — also handles Proton VPN and Tailscale
 vpn-status
 ```
 

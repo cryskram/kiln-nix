@@ -20,8 +20,7 @@ ARCHITECTURE.md
 
 The repository is public.
 
-The goal is a reproducible NixOS desktop: Hyprland with the official Caelestia shell by default,
-niri with Dux Shell as the alternative (`desktop.shell`, see `docs/decisions/caelestia.md`).
+The goal is a reproducible NixOS desktop: Hyprland with Dux Shell (see `docs/decisions/hyprland-dms.md`).
 
 ---
 
@@ -308,7 +307,7 @@ NixOS
 Home Manager
 → user configuration
 
-Hyprland (or niri)
+Hyprland
 → compositor/window management
 
 Quickshell
@@ -339,7 +338,7 @@ Avoid duplicate functionality.
 
 # 14. Compositor
 
-The compositor (Hyprland by default, niri for the DMS session) owns:
+Hyprland owns:
 
 * window management
 * focus
@@ -350,9 +349,9 @@ The compositor (Hyprland by default, niri for the DMS session) owns:
 
 Do not implement window-management logic in Quickshell.
 
-Hyprland's base config is the official Caelestia Lua config, linked unchanged from the
-`caelestia-dots` input. Personal changes go only in `modules/hyprland/user.lua` and the
-generated `hypr-vars.lua`; never fork the official files into the repo.
+Hyprland's base config is Dux Shell's stock Lua config, taken unchanged from the packaged
+`pkgs.dux-shell` source. Personal changes go only in `modules/hyprland/user.lua` and the seeded
+`dms/*.lua` defaults in `modules/hyprland/default.nix`; never fork the stock files into the repo.
 
 ---
 

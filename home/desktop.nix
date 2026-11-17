@@ -1,11 +1,11 @@
-{ osConfig, pkgs, ... }:
+{ pkgs, ... }:
 let
   tokens = import ../theme/tokens.nix;
   inherit (tokens) colors fonts;
   cn = tokens.colorsNoHash;
 
   lock = "${pkgs.dux-shell}/bin/dms ipc call lock lock || ${pkgs.swaylock}/bin/swaylock -f";
-  niri = "${pkgs.niri}/bin/niri";
+  dpms = state: "${pkgs.hyprland}/bin/hyprctl dispatch 'hl.dsp.dpms({ action = \"${state}\" })'";
 in
 {
   programs.ghostty = {
@@ -20,7 +20,7 @@ in
       selection-background = colors.selectionBg;
       selection-foreground = colors.selectionFg;
       palette = builtins.genList (i: "${toString i}=${builtins.elemAt colors.ansi i}") 16;
-      # Ghostty cannot blur under niri; the blur comes from niri's window-rule (home/niri.nix).
+      # Ghostty cannot request blur itself; Hyprland's decoration blur shows through this opacity.
       background-opacity = 0.82;
       background-blur = 32;
       unfocused-split-opacity = 1;
@@ -77,9 +77,8 @@ in
     };
   };
 
-  # Caelestia runs its own idle monitor; swayidle only backs the DMS session.
   services.swayidle = {
-    enable = osConfig.desktop.shell == "dms";
+    enable = true;
     events.before-sleep = "sh -c '${lock}'";
     timeouts = [
       {
@@ -88,8 +87,8 @@ in
       }
       {
         timeout = 305;
-        command = "${niri} msg action power-off-monitors";
-        resumeCommand = "${niri} msg action power-on-monitors";
+        command = dpms "off";
+        resumeCommand = dpms "on";
       }
     ];
   };
