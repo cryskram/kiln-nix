@@ -1,6 +1,23 @@
-# Learnings — Journal for niri-desktop + Pi
+# Learnings — Journal for kiln-nix + Pi
 
 Reverse chronological. Newest on top.
+
+## 2026-11-17 — Claude Code settings now owned by `home/claude-code.nix` (decision) — `dev/claude`
+
+- What: `programs.claude-code` now sets `settings` (model, effort, theme, `attribution.commit/pr = ""`, statusLine, herdr SessionStart hook) and `context` (global CLAUDE.md: no co-author lines); `~/.claude/settings.json` + `CLAUDE.md` are read-only store links.
+- Why/Context: user wants kiln-nix as the single source of truth; `/login` still works (writes `.credentials.json`), but `/config`/`/model` can't persist — edit the nix and rebuild.
+- How/Apply: status line is `home/scripts/claude-statusline.sh` via `writeShellApplication`; under its `set -e`, `x=$(git …)` that fails kills the script, so guard with `|| true`. herdr owns `~/.claude/hooks/herdr-agent-state.sh` — only its registration lives in nix.
+
+Supersedes: 2026-10-12 — claude-code is installed by HM's `programs.claude-code`
+Source: first-time Claude Code setup session, commit d059b91.
+
+## 2026-11-16 — Woodpecker: org secrets, and bond-scanner's husky branch rule (gotcha)
+
+- What: Repo-level Woodpecker secrets cost one UI trip per repo; inserting them once with `org_id=3, repo_id=0` in the `secrets` table makes every repo in the org inherit them (restart the server after).
+- What: `bond-scanner` has a husky pre-commit hook requiring branch names `<type>/<name>/<message>` (e.g. `ci/vageesh/woodpecker-setup`) — a plain `release/x` branch is rejected at commit time, and the hook also runs the test suite (~40s).
+- How/Apply: check for `.husky/` before creating branches in leaf-engineering repos; enabling a repo in Woodpecker is what registers its forge webhook, so DB row insertion is not a substitute.
+
+Source: CI pipeline rollout across 16 bondscanner repos.
 
 ## 2026-11-16 — Code comments max 1-2 lines, in every repo (preference) — `style/comments`
 
@@ -459,7 +476,7 @@ Source: user instruction 2026-10-13 — "remember this as a open issue".
 
 - What: `/sync` auto-runs on pi's `agent_end` (per prompt completion, not per-turn `turn_end`); fire-and-forget with per-session in-flight+trailing flags, status-key flash only, failures silent.
 - Why/Context: A slow first upload must never block the next prompt; quiet failures keep a dead server from nagging mid-flow. Off via `/sync auto off`, `QUERION_AUTOSYNC=0`, or config `autoSync:false`.
-- How/Apply: `~/Projects/querion/pi/querion-sync.ts` is upstream, vendored to `~/niri-desktop/pi/extensions/`; verify with a mock `pi.on`/`registerCommand` harness before claiming it works.
+- How/Apply: `~/Projects/querion/pi/querion-sync.ts` is upstream, vendored to `~/kiln-nix/pi/extensions/`; verify with a mock `pi.on`/`registerCommand` harness before claiming it works.
 
 Source: user request for sync-on-completion + faster uploads; validated against pi 1.0.4 extension types.
 
@@ -729,11 +746,11 @@ Source: inspected Phoenix README, `docs/operations.md`, `docs/architecture.md`, 
 - Why: Agent memory resets per session; without this file preferences re-learn every time. Rules enforce read-at-start, write-on-learn.
 - How: At session start `read` this file; on any new signal `edit` an entry on top. Keep entries 2-4 lines, tagged `category` + `scope/tag`.
 
-Source: bootstrapped with niri-desktop declarative setup — repo is source of truth for pi config.
+Source: bootstrapped with kiln-nix declarative setup — repo is source of truth for pi config.
 
 ## 2026-10-07 — Declarative repo is law (decision) — `nix/core`
 
-- What: All system, pi, and HM config lives in `~/niri-desktop` flake (`flake.nix`, `modules/`, `home/`, `pi/`). Never imperatively edit `~/.pi` or running system; change repo → `nix flake check` → `nixos-rebuild dry-build`.
+- What: All system, pi, and HM config lives in `~/kiln-nix` flake (`flake.nix`, `modules/`, `home/`, `pi/`). Never imperatively edit `~/.pi` or running system; change repo → `nix flake check` → `nixos-rebuild dry-build`.
 - Why: Rebuilds must reproduce on fresh checkout; imperative drift breaks that.
 - How: `pi` is `programs.pi.coding-agent` via `pi.nix` (see `modules/core.nix`); `pi/packages.nix` pins extensions; `AGENTS.md` §2/§9 is the rule.
 
