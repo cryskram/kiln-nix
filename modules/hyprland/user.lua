@@ -2,7 +2,7 @@
 
 hl.env("QT_QPA_PLATFORMTHEME", "qt5ct")
 
-hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 1.2 })
+hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 1 })
 hl.monitor({ output = "HDMI-A-1", mode = "2560x1440@59.95", position = "auto-right", scale = 1 })
 
 local layouts = { "dwindle", "scrolling", "master", "monocle" }
