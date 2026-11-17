@@ -23,6 +23,12 @@
 
     pi.url = "github:lukasl-dev/pi.nix";
 
+    # Caelestia upstream is Hyprland-only; this fork adds a niri backend and tracks upstream closely.
+    caelestia = {
+      url = "github:CrankyTitanO7/caelestia-shell-WM";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -1,15 +1,16 @@
 # niri-desktop
 
-Reproducible NixOS desktop and developer workstation built around [Niri](https://github.com/YaLTeR/niri) and Dux Shell (formerly DankMaterialShell), themed Gruvbox Dark, Wayland-only.
+Reproducible NixOS desktop and developer workstation built around [Niri](https://github.com/YaLTeR/niri) and the [Caelestia](https://github.com/caelestia-dots/shell) shell, themed Gruvbox Dark, Wayland-only.
 
 ![NixOS](https://img.shields.io/badge/NixOS-26.05-blue?logo=nixos)
 ![Niri](https://img.shields.io/badge/compositor-Niri-d65d0e)
-![Shell](https://img.shields.io/badge/shell-Dux%20Shell-504945)
+![Shell](https://img.shields.io/badge/shell-Caelestia-504945)
 
 The Git repository is the single source of truth: clone it and rebuild on compatible hardware.
 
 - **Compositor:** Niri — scrollable tiling, 12px corners, 8px gaps, 2px focus border, glass blur
-- **Shell:** Dux Shell (Quickshell) — bar, launcher, control centre, notifications, lock, wallpaper
+- **Shell:** Caelestia (Quickshell, niri fork) — bar, launcher, dashboard, notifications, lock, wallpapers; Dux Shell selectable via `desktop.shell`
+- **Wallpapers:** 17 curated Gruvbox wallpapers, pinned by hash, in `~/Pictures/Wallpapers/gruvbox`
 - **Theme:** Gruvbox Dark from one set of tokens ([`theme/tokens.nix`](theme/tokens.nix))
 - **Login:** SDDM with the Astronaut theme
 - **Workstation:** devenv + direnv, Docker, language toolchains, pi and OpenCode coding agents
@@ -49,16 +50,21 @@ Niri's default bindings are included first; these are added or overridden.
 | Bind | Action |
 |---|---|
 | `Mod+T` / `Mod+Return` | Ghostty |
-| `Mod+D` / `Mod+Slash` | launcher (DMS spotlight, fuzzel fallback) |
+| `Mod+D` / `Mod+Slash` | launcher (`>` for actions: `>wallpaper`, `>scheme`, `>variant`) |
+| `Mod+A` | dashboard (media, weather, performance) |
+| `Mod+N` | notifications sidebar |
+| `Mod+Ctrl+C` | utilities (quick toggles) |
+| `Mod+P` / `Mod+Shift+E` | session menu |
+| `Super+Alt+L` | lock |
 | `Mod+Ctrl+V` | clipboard history |
-| `Mod+Ctrl+C` | control centre |
-| `Mod+P` | power menu (wlogout fallback) |
-| `Super+Alt+L` | lock (swaylock fallback) |
-| `Mod+Shift+S` / `Print` | region / full screenshot |
-| `Mod+Shift+R` | record a region to `~/Videos` |
+| `Mod+Semicolon` | emoji picker |
+| `Mod+Shift+S` / `Print` | region (annotate in swappy) / full screenshot |
+| `Mod+Shift+R` | record a region (press again to stop) |
 | `Mod+M` | toggle mirroring onto HDMI-A-1 |
 | `Mod+Shift+1` / `Mod+Shift+2` | extend with HDMI left / right |
 | `Mod+Shift+N` | VPN chooser (`vpn-toggle`) |
+
+Theme and wallpaper are picked from the launcher (`>scheme`, `>wallpaper`). Switching back to Dux Shell is one line: `desktop.shell = "dms";`.
 
 ## Development environments
 

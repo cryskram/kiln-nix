@@ -4,7 +4,7 @@ This is the runnable context for every pi session in this repo. Read it alongsid
 
 ## What this repo is
 
-Reproducible NixOS desktop/workstation around **Niri** (scrollable tiling) + **Dux Shell** (renamed from DankMaterialShell; `dms` binary, `modules/dms-shell.nix`) — Gruvbox Dark, Wayland-native, on `nixos-26.05`. The Git repo is the **single source of truth**; `nixos-rebuild` reproduces the system from `flake.nix`. See `README.md`, `ARCHITECTURE.md` (the why), `AGENTS.md`, and `RICE.md` for the visual spec.
+Reproducible NixOS desktop/workstation around **Niri** (scrollable tiling) + **the desktop shell** via `desktop.shell`: Caelestia (`modules/caelestia/`, default) or Dux Shell (`modules/dms-shell.nix`) — Gruvbox Dark, Wayland-native, on `nixos-26.05`. The Git repo is the **single source of truth**; `nixos-rebuild` reproduces the system from `flake.nix`. See `README.md`, `ARCHITECTURE.md` (the why), `AGENTS.md`, and `RICE.md` for the visual spec.
 
 ## Stack & pins
 

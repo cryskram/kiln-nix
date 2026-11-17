@@ -1,5 +1,11 @@
 # Dux Shell (formerly DankMaterialShell) rewrites its own settings.json, so the repo owns only the theme and plugin patches.
-{ pkgs, user, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  user,
+  ...
+}:
 let
   tokens = import ../theme/tokens.nix;
   c = tokens.colors;
@@ -30,7 +36,7 @@ let
     matugen_type = "scheme-content";
   };
 in
-{
+lib.mkIf (config.desktop.shell == "dms") {
   programs.dms-shell = {
     enable = true;
     package = pkgs.dux-shell;

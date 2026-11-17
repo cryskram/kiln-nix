@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ osConfig, pkgs, ... }:
 let
   tokens = import ../theme/tokens.nix;
   inherit (tokens) colors fonts;
@@ -77,8 +77,9 @@ in
     };
   };
 
+  # Caelestia runs its own idle monitor; swayidle only backs the DMS session.
   services.swayidle = {
-    enable = true;
+    enable = osConfig.desktop.shell == "dms";
     events.before-sleep = "sh -c '${lock}'";
     timeouts = [
       {

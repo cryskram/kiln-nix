@@ -3,6 +3,8 @@
     ./nix.nix
     ./core.nix
     ./pi
+    ./desktop.nix
+    ./caelestia
     ./dms-shell.nix
     ./theme.nix
     ./shell.nix

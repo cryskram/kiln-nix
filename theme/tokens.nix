@@ -8,6 +8,7 @@ rec {
     bg2 = "#504945";
     bg3 = "#665c54";
     bg4 = "#7c6f64";
+    fg0 = "#fbf1c7";
     fg1 = "#ebdbb2";
     fg2 = "#d5c4a1";
     fg3 = "#bdae93";
@@ -30,7 +31,28 @@ rec {
     aqua-bright = "#8ec07c";
     orange-bright = "#fe8019";
 
+    red-faded = "#9d0006";
+    green-faded = "#79740e";
+    yellow-faded = "#b57614";
+    blue-faded = "#076678";
+    purple-faded = "#8f3f71";
     aqua-faded = "#427b58";
+    orange-faded = "#af3a03";
+  };
+
+  paletteLight = {
+    bg0_h = "#f9f5d7";
+    bg0 = "#fbf1c7";
+    bg0_s = "#f2e5bc";
+    bg1 = "#ebdbb2";
+    bg2 = "#d5c4a1";
+    bg3 = "#bdae93";
+    bg4 = "#a89984";
+    fg0 = "#282828";
+    fg1 = "#3c3836";
+    fg2 = "#504945";
+    fg3 = "#665c54";
+    fg4 = "#7c6f64";
   };
 
   colors = with palette; {
@@ -91,6 +113,8 @@ rec {
 
   fonts = {
     ui = "Inter";
+    display = "Rubik";
+    icons = "Material Symbols Rounded";
     mono = "JetBrains Mono";
     size = {
       xs = 9;

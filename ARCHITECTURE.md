@@ -12,7 +12,9 @@ modules/                  NixOS modules (imported by modules/default.nix)
   nix.nix                 nix settings, GC, nixpkgs-unstable overlay
   core.nix                Home Manager wiring, session variables, desktop services
   pi/                     pi coding agent: default.nix (agent), guard.nix (permissions), mcp.nix (MCP servers)
-  dms-shell.nix           Dux Shell (DMS) bar/launcher/notifications/lock
+  desktop.nix             `desktop.shell` option: caelestia | dms
+  caelestia/              Caelestia shell: package overrides, generated Gruvbox scheme, wallpapers
+  dms-shell.nix           Dux Shell (DMS), the alternative shell
   niri, sddm, theme, shell, docker, ollama, direnv, vpn, tailscale, ssh, android
 home/                     Home Manager modules (imported by home/default.nix)
   scripts/*.sh            user scripts, built with writeShellApplication (shellcheck at build time)
@@ -33,13 +35,17 @@ dev/                      devenv fragments and project templates
 
 ## Visual system
 
-`theme/tokens.nix` is the only place colours are defined. `palette` holds raw Gruvbox Dark values; `colors` maps them to roles (`background`, `accent-primary`, `error`, …). Everything themed derives from it: niri borders, Ghostty, fuzzel, swaylock, fish, starship, Spotify (spicetify), Sioyek, the SDDM cursor, and the DMS theme JSON generated in `modules/dms-shell.nix`.
+`theme/tokens.nix` is the only place colours are defined. `palette` holds raw Gruvbox Dark values; `colors` maps them to roles (`background`, `accent-primary`, `error`, …). Everything themed derives from it: niri borders, Ghostty, fuzzel, swaylock, fish, starship, Spotify (spicetify), Sioyek, the SDDM cursor, the Caelestia scheme (`modules/caelestia/scheme.nix`) and the DMS theme JSON.
 
 Blur is decorative. niri blurs every window and popup; Ghostty cannot request blur under niri, so its translucency (`background-opacity`) relies on niri's window rule. DMS requests blur for its own surfaces through `ext-background-effect`, so only the fuzzel fallback launcher has a layer rule; adding one for DMS double-applies and draws a tinted box around rounded popouts.
 
-## Desktop shell (DMS)
+## Desktop shell
 
-Dux Shell (renamed from DankMaterialShell in nixpkgs, 2026-10) rewrites `~/.config/dms/settings.json` from its own UI. The repo therefore owns only the theme file and seeds settings on a fresh install; bar layout and widget choices stay app-owned. `DMS_DISABLE_MATUGEN=1` stops it regenerating colours from the wallpaper and templating compositor config. The AiOverviewControl plugin is patched on every activation because plugin updates replace the file.
+`desktop.shell` (`modules/desktop.nix`) selects the shell: `caelestia` (default) or `dms`. Each shell module is wrapped in `mkIf`, and `home/niri.nix` picks the matching keybinds, so exactly one shell, idle manager and bind set is active.
+
+**Caelestia** (`modules/caelestia/`) comes from a niri-capable fork; why that fork, and the trade-offs, are in [`docs/decisions/caelestia.md`](docs/decisions/caelestia.md). Its bundled Gruvbox scheme is wrong, so `scheme.nix` generates one from the tokens and the CLI package is overridden to ship it. Caelestia owns its state under `~/.local/state/caelestia`; activation seeds the scheme and wallpaper only on first run. The CLI's theme appliers are disabled because they would rewrite files Home Manager owns. Wallpapers are fetched by hash from AngelJumbo/gruvbox-wallpapers and linked file-by-file, because the wallpaper scanner does not follow symlinked directories.
+
+**Dux Shell** (formerly DankMaterialShell) rewrites its own `settings.json`, so the repo owns only its theme file. `DMS_DISABLE_MATUGEN=1` stops it regenerating colours from the wallpaper, and the AiOverviewControl plugin is patched on every activation.
 
 ## Pi
 
