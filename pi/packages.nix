@@ -195,14 +195,14 @@ in
   # Generic for any project: no niri-desktop specific code, works in any cwd.
   pi-subagents = withDeps {
     pname = "pi-subagents";
-    version = "0.84.0";
+    version = "0.88.1";
     src = pkgs.fetchFromGitHub {
       owner = "nicobailon";
       repo = "pi-subagents";
-      tag = "v0.84.0";
-      hash = "sha256-yJHclk8TqJX0OGDteZYAbcW9qGDY9a8BSVy0kxcRpEU=";
+      tag = "v0.88.1";
+      hash = "sha256-t/IAZHTbIG1iFF+jq9tBm2jptfIYO2mLvn7WPb1I2Qc=";
     };
-    npmHash = "sha256-MMg1UZtsrPVdzGgHSjUT7PyYTxdAslYge0Ltwyx4e7o=";
+    npmHash = "sha256-EvE0kLCB56S0SJV83krTsQwk7vrrlYuwsh4iaD9YGfI=";
     npmFlags = [
       "--omit=dev"
     ];
@@ -217,14 +217,14 @@ in
   # The virtual `auto` router cannot be streamed directly.
   pi-web-access = withDeps {
     pname = "pi-web-access";
-    version = "0.46.0";
+    version = "0.48.0";
     src = pkgs.fetchFromGitHub {
       owner = "nicobailon";
       repo = "pi-web-access";
-      tag = "v0.46.0";
-      hash = "sha256-i/C22ovZYwUu3a7gzBeFVaMqvhIB+N/Z63wOCPdhwLs=";
+      tag = "v0.48.0";
+      hash = "sha256-kvxwqQzvUEvBU8URxTCe4hGbWiUa41TbsdtdiM6+GqE=";
     };
-    npmHash = "sha256-C3RT+Wba2ZwF4GozxW4BuXwUUI/6nwD0X27PeO0flyM=";
+    npmHash = "sha256-aOpdUfjjZ6QJBGV9vCk7iduNI7nYPV01c3umcMLXcNE=";
     npmFlags = [
       "--omit=dev"
     ];

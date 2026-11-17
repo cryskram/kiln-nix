@@ -2,6 +2,19 @@
 {
   home.packages = with pkgs; [
     wl-mirror
+    # Re-imports Chrome's live Figma session into figma-linux's cookie jar; the
+    # app's own browser-login redeem no longer satisfies Figma. See docs/figma.md.
+    (writeShellApplication {
+      name = "figma-session-import";
+      runtimeInputs = [
+        python3
+        openssl
+        libsecret
+        procps
+        coreutils
+      ];
+      text = builtins.readFile ./scripts/figma-session-import.sh;
+    })
     # get-sts — sanitized for GitHub (no account/MFA/domain hardcoded).
     # Create ~/.config/aws-sts.env from the example template and fill in:
     #   AWS_ACCOUNT_ID=<12-digit account id>
