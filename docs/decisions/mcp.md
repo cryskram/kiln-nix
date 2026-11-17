@@ -19,7 +19,7 @@ Tasks, no interactive MCP UI, and its tool search is word-based only.
 
 ## Decision
 `pi-mcp-adapter` (5.4.0, pinned in `pi/packages.nix`, wired in
-`modules/core.nix`) owns MCP. The built-in is disabled declaratively with
+`modules/pi/default.nix`) owns MCP. The built-in is disabled declaratively with
 `settings.extensions = [ "-builtin:mcp" ]`.
 
 - One `mcp` proxy tool (~200 tokens) instead of one tool per MCP tool.

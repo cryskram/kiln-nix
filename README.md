@@ -1,23 +1,20 @@
 # niri-desktop
 
-Reproducible NixOS desktop and developer workstation built around [Niri](https://github.com/YaLTeR/niri) + [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell) — Catppuccin Macchiato, Wayland-native.
+Reproducible NixOS desktop and developer workstation built around [Niri](https://github.com/YaLTeR/niri) and Dux Shell (formerly DankMaterialShell), themed Gruvbox Dark, Wayland-only.
 
 ![NixOS](https://img.shields.io/badge/NixOS-26.05-blue?logo=nixos)
-![Niri](https://img.shields.io/badge/compositor-Niri-7aa2f7)
-![DMS](https://img.shields.io/badge/shell-DankMaterialShell-414868)
-![license](https://img.shields.io/badge/license-MIT-lightgrey)
+![Niri](https://img.shields.io/badge/compositor-Niri-d65d0e)
+![Shell](https://img.shields.io/badge/shell-Dux%20Shell-504945)
 
-Single source of truth — clone and rebuild on compatible hardware.
+The Git repository is the single source of truth: clone it and rebuild on compatible hardware.
 
-## Showcase
+- **Compositor:** Niri — scrollable tiling, 12px corners, 8px gaps, 2px focus border, glass blur
+- **Shell:** Dux Shell (Quickshell) — bar, launcher, control centre, notifications, lock, wallpaper
+- **Theme:** Gruvbox Dark from one set of tokens ([`theme/tokens.nix`](theme/tokens.nix))
+- **Login:** SDDM with the Astronaut theme
+- **Workstation:** devenv + direnv, Docker, language toolchains, pi and OpenCode coding agents
 
-- **Compositor:** Niri scrollable tiling, dynamic workspaces, rounded corners (`12px`), `8px` gaps, rings `2px`
-- **Shell:** DankMaterialShell (Quickshell) — island bar, glass/blur, launcher/control-center/wallpaper/lock
-- **Theme:** Gruvbox Dark (centralized tokens, no hard-coded palette)
-- **Login:** SDDM Astronaut (Wayland, `QtMultimedia` + Bibata cursor)
-- **Workstation:** `devenv` + `direnv` + Docker, full language toolchains
-
-> Spec: [`RICE.md`](RICE.md) · Architecture: [`AGENTS.md`](AGENTS.md) · Dev setup: [`DEV_ENVIRONMENT.md`](DEV_ENVIRONMENT.md) · Decision: [`docs/decisions/dank-material-shell.md`](docs/decisions/dank-material-shell.md)
+Docs: [`ARCHITECTURE.md`](ARCHITECTURE.md) (how and why) · [`AGENTS.md`](AGENTS.md) (working rules) · [`RICE.md`](RICE.md) (visual spec) · [`DEV_ENVIRONMENT.md`](DEV_ENVIRONMENT.md) · [`docs/decisions/`](docs/decisions/)
 
 ## Quick start
 
@@ -26,273 +23,105 @@ git clone https://github.com/cryskram/niri-desktop.git ~/niri-desktop
 cd ~/niri-desktop
 nix flake check
 sudo nixos-rebuild switch --flake .#nixos --accept-flake-config
-# reboot to SDDM -> Niri
 ```
 
-Requirements: NixOS `26.05` `x86_64`, flakes enabled, Intel graphics, `1920×1080` (scales to multi-monitor).
+Requires NixOS 26.05 on x86_64 with flakes enabled. Built on Intel graphics at 1920×1080; outputs are configured per connector, so additional monitors work.
 
-## Structure
+## Layout
 
 ```
-flake.nix                — inputs: nixpkgs, unstable, home-manager, pi.nix, spicetify
-configuration.nix        — system (boot, networking, pipewire, locale)
-hardware-configuration.nix — generated, don't edit casually
-modules/                 — core.nix (flake wiring, pi, HM), theme/shell/niri/sddm/docker/direnv/vpn.nix
-home/                    — niri.nix, theme.nix, shell.nix, git.nix, development.nix, ...
-theme/                   — tokens.nix + dms-gruvbox.json (DankMaterialShell theme)
-pi/                      — pi prompts, skills, extensions (mcp-adapter, pi-btw, rpiv-todo/ask-user-question, zentui, pi-subagents, pi-web-access, pi-guard; local jev-router/stash/querion-sync/google-workspace), rules, theme
-dev/                     — personal devenv definitions (shared/, templates/, company/)
-secrets/                 — gitignored VPN/keys (README + .gitkeep tracked)
+flake.nix            inputs, formatter, checks, the `nixos` system
+configuration.nix    host basics (boot, locale, audio, user)
+modules/             NixOS modules — nix, core, pi/, dms-shell, niri, sddm, vpn, …
+home/                Home Manager modules and scripts/
+theme/tokens.nix     colours, fonts, cursor, icons
+pi/                  pi extensions, skills, brain, themes, pinned packages
+pkgs/                packages not in nixpkgs
+dev/                 devenv fragments and project templates
 ```
 
-`flake.nix` modules:
-`configuration.nix`, `hardware-configuration.nix`, `modules/{core,theme,shell,niri,sddm,docker,direnv,vpn}.nix`, `pi` + `home-manager` modules.
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for details.
 
-## Desktop
+## Keybindings
 
-**Stack:** NixOS → Wayland → Niri → DankMaterialShell → utilities (`fuzzel` launcher fallback, `swaylock` lock fallback).
-
-**Bar (DankMaterialShell islands):** `[launcher|workspaces] [clock] [network|bluetooth|volume|battery|control-center|session]` — per-pill hex, no overflow, survives missing BT/NET/muted/battery states. Panels (network/audio/BT) share the Macchiato tokens from `theme/tokens.nix`.
-
-**Tokens (`theme/tokens.nix`):** `background #24273a`, `surface #363a4f`, `accent #c6a0f6`, etc. — change there, not per-file.
-
-**Fonts:** Inter (UI), JetBrains Mono (mono/code), Noto Emoji.
-
-**Icons:** `Tela-circle-dark` (crisp `@2x`), cursor `Bibata-Modern-Classic 24`.
-
-## Keybindings (Niri)
+Niri's default bindings are included first; these are added or overridden.
 
 | Bind | Action |
 |---|---|
 | `Mod+T` / `Mod+Return` | Ghostty |
-| `Mod+D` | DMS spotlight (fallback fuzzel) |
-| `Mod+Ctrl+V` | clipboard |
-| `Mod+Ctrl+C` | control-center |
-| `Mod+P` | session/power |
-| `Super+Alt+L` | lock |
-| `Mod+M` / `Mod+Shift+M` | display extend ↔ mirror (`wl-mirror` onto HDMI-A-1) |
-| `Mod+Shift+N` | VPN toggle (`wg-quick-wg0`) |
-| `Mod+Shift+S` / `Print` | region/full screenshot → Satty |
-| `Mod+Shift+R` | screen record |
-| `Mod+1..9`, arrows, etc. | Niri defaults (see `home/niri.nix` includes `default-config.kdl`) |
+| `Mod+D` / `Mod+Slash` | launcher (DMS spotlight, fuzzel fallback) |
+| `Mod+Ctrl+V` | clipboard history |
+| `Mod+Ctrl+C` | control centre |
+| `Mod+P` | power menu (wlogout fallback) |
+| `Super+Alt+L` | lock (swaylock fallback) |
+| `Mod+Shift+S` / `Print` | region / full screenshot |
+| `Mod+Shift+R` | record a region to `~/Videos` |
+| `Mod+M` | toggle mirroring onto HDMI-A-1 |
+| `Mod+Shift+1` / `Mod+Shift+2` | extend with HDMI left / right |
+| `Mod+Shift+N` | VPN chooser (`vpn-toggle`) |
 
-Multi-monitor: `eDP-1 1920×1080@60 scale 1.15` + `HDMI-A-1 2560×1440@59.95 scale 1.0` extend (mirror via `wl-mirror`). `output` position `auto` (toggle is temporary `niri msg output position set`).
-
-## Developer workstation
-
-Machine tools (HM `home/development.nix` + `applications.nix`) vs project envs (`devenv`).
-
-**Core:** `git`/`gh`/`git-lfs`, `neovim`/`lazygit`/`yazi`, `fzf`/`zoxide`/`eza`/`bat`/`fd`/`ripgrep`/`jq`/`yq`, `curl`/`wget`/`httpie`, `tree`/`file`...
-
-**Languages:**
-- Go `go`/`gopls`/`delve`/`golangci-lint`/`gotools`
-- Java/Kotlin `jdk`/`maven`/`gradle`/`kotlin` + `kotlin-language-server`, `jetbrains.idea`/`goland`/`clion`
-- Node `nodejs`/`pnpm`/`yarn`/`typescript`/`eslint`/`prettier`
-- Python `python3`/`uv`/`ruff`/`black`/`mypy`/`pyright`
-- Rust `rustc`/`cargo`/`rust-analyzer`/`clippy`/`rustfmt`
-- C/C++ `gcc` (hiPrio) / `clang` (lowPrio) / `gdb`/`lldb`/`cmake`/`ninja`/`clang-tools`
-
-**Containers:** `virtualisation.docker` + `compose`/`buildx`/`lazydocker`, user in `docker` group.
-
-**DB clients:** `postgresql`/`redis`/`sqlite`/`mysql84`/`mongosh` (services via Docker/devenv).
-
-**Apps:** Chrome, Ghostty, Nautilus, Spotify, Slack, Discord, `figma-linux`, Bruno/Postman.
-
-## devenv + direnv
+## Development environments
 
 ```bash
-# new personal project
 mkdir ~/my-app && cd ~/my-app
-cp -r ~/niri-desktop/dev/templates/go/* .  # or node/java/python/rust
-direnv allow  # auto-activates devenv
-
-# inside devenv:
-devenv test
+cp -r ~/niri-desktop/dev/templates/go/. .   # or node, java, python, python-ai, rust
+direnv allow
 ```
 
-Templates are **standalone** (`languages.*` inline) — copied project doesn't depend on `~/niri-desktop`. Shared fragments in `dev/shared/` are for `dev/company/` personal envs that don't touch company repos (see `dev/company/README.md`).
+Templates are standalone, so a copied project does not depend on this repository. Company projects use a personal env from `dev/company/` without adding Nix files to the company repo (see [`dev/company/README.md`](dev/company/README.md)).
+
+## VPN and secrets
+
+Secrets never enter Git: `secrets/*` is ignored except its README. Tunnels are used through NetworkManager:
 
 ```bash
-# company repo (no Nix files until approval)
-# dev/company/project-a.nix.example -> dev/company/<real>.nix
-# then in company checkout: devenv --file ~/niri-desktop/dev/company/<real>.nix shell
-```
-
-Enable globally: `modules/direnv.nix` + `home/direnv.nix` (`nix-direnv`).
-
-## VPN & secrets
-
-WireGuard/OpenVPN via `modules/vpn.nix` — **never committed**.
-
-```bash
-# WireGuard (detected: <name>.conf -> secrets/wg0.conf 600)
-cp ~/Downloads/<name>.conf ~/niri-desktop/secrets/wg0.conf
-chmod 600 ~/niri-desktop/secrets/wg0.conf
-sudo nixos-rebuild switch --flake .#nixos --accept-flake-config
-
-Mod+Shift+N        # or vpn-toggle
-vpn-status         # up/down
-systemctl status wg-quick-wg0
-journalctl -u wg-quick-wg0 -n 30
-# NM import to show inside the DMS network panel:
 nmcli connection import type wireguard file ~/niri-desktop/secrets/wg0.conf
+vpn-toggle    # or Mod+Shift+N — also handles Proton VPN and Tailscale
+vpn-status
 ```
 
-`.gitignore` blocks `secrets/*` (except `README.md`/`.gitkeep`), `*.ovpn`, `wg*.conf`, `.env*`, `.direnv`/`.devenv`, `*.key`/`*.pem`/`.age`. See `secrets/README.md`.
+See [`secrets/README.md`](secrets/README.md) and [`docs/tailscale.md`](docs/tailscale.md).
 
-## Validate & rebuild
+## Validate and rebuild
 
 ```bash
-nix fmt
-nix flake check          # validates niri config via `niri validate`
+nix fmt                                   # nixfmt, biome, shfmt
+nix flake check                           # evaluation + `niri validate` on the generated config
 nixos-rebuild dry-build --flake .#nixos
 sudo nixos-rebuild switch --flake .#nixos --accept-flake-config
-
-devenv --version; direnv version; docker --version; docker compose version
-go version; node --version; python --version; rustc --version; java --version
-pi --version  # 1.3.0 — keep the pi.nix wrapper + nixpkgs-unstable binary, don't imperatively upgrade
-opencode --version  # 2.1.1 — OpenCode 2 from pkgs/opencode2.nix (nixpkgs still has 1.x); reads v1 config/creds unchanged
-pi --list           # should show mcp-adapter, pi-btw, rpiv-todo, rpiv-ask-user-question, zentui, pi-subagents, pi-web-access, pi-guard
 ```
 
-Known fix: `gcc`/`clang` both provide `bin/c++` → `lib.hiPrio gcc` / `lib.lowPrio clang`; `corepack` bundled in `nodejs_24`.
+## Updating
 
-## Updating inputs
-
-Never run bare `nix flake update` — it bumps every input at once, and `nixpkgs` alone can cost ~10 minutes of local kernel-module compilation. Update one input at a time and preview the price first.
+Update one flake input at a time and check what will compile before switching:
 
 ```bash
-cd ~/niri-desktop
-git status --short                   # must be clean
-git tag pre-update-$(date +%Y%m%d)   # cheap rollback point
-
-nix flake update <one-input>         # e.g. nixpkgs, home-manager
-
-# what will actually compile locally? (nix flake check does NOT tell you)
-nix build --dry-run --no-link '.#nixosConfigurations."nixos".config.system.build.toplevel' 2>&1 \
-  | grep -oE '[a-z0-9]{32}-[^ ]+\.drv' | sed 's|^[a-z0-9]*-||; s|\.drv$||' | sort -u
-
+git tag pre-update-$(date +%Y%m%d)
+nix flake update nixpkgs
+nix build --dry-run --no-link .#nixosConfigurations.nixos.config.system.build.toplevel
 nix flake check
-sudo nixos-rebuild switch --flake .#nixos --accept-flake-config
 ```
 
-`nix flake check` validates evaluation only — it says nothing about build cost. The dry-run list is what tells you what will compile.
+| Input | Cost |
+|---|---|
+| `nixpkgs` | kernel modules (~10 min) when the kernel moves |
+| `nixpkgs-unstable` | usually cached (also provides the shell and coding agents) |
+| `pi` | cached via `pi.cachix.org` |
+| `home-manager`, `spicetify-nix` | seconds |
 
-### Cost per input
-
-| Input | Cost when updated | Why |
-|---|---|---|
-| `nixpkgs` | kernel modules (~10 min) when its version moves | |
-| `nixpkgs-unstable` | usually cached | Hydra builds unstable; this is also where the shell comes from |
-| `pi` | cached | `pi.cachix.org` is in this flake's `nixConfig` |
-| `home-manager`, `spicetify-nix` | seconds | config only |
-
-Rule of thumb: `nixpkgs` is the only input that can cost ~10 minutes (kernel modules); everything else is cheap. A reasonable cadence is `nixpkgs` + `home-manager` + `nixpkgs-unstable` every few weeks.
-
-> Until 2026-10-15 this table had a `noctalia` row that **always** source-built (~10–20 min) because its flake has
-> no binary cache. Switching to DankMaterialShell (from `nixpkgs`) removed the last expensive input — see
-> [`docs/decisions/dank-material-shell.md`](docs/decisions/dank-material-shell.md).
-
-### Updating pi extensions
-
-The third-party pi extensions (`pi-btw`, `pi-subagents`, `pi-web-access`, `pi-zentui`, `pi-guard`, `pi-mcp-adapter`, the two `rpiv` extensions) are pinned inside [`pi/packages.nix`](pi/packages.nix), **not** flake inputs — `nix flake update` never touches them.
+Third-party pi extensions are pinned in [`pi/packages.nix`](pi/packages.nix), not as flake inputs:
 
 ```bash
-cd ~/niri-desktop
-scripts/update-pi-extensions.py                       # report which are outdated
-scripts/update-pi-extensions.py --update-all         # bump every outdated pin
-scripts/update-pi-extensions.py --update pi-subagents # just one
-scripts/update-pi-extensions.py --rehash             # re-capture npm hashes
-                                                     # (after a nixpkgs bump
-                                                     #  changed node_modules)
-scripts/update-pi-extensions.py --check              # build every extension
+scripts/update-pi-extensions.py                # report outdated pins
+scripts/update-pi-extensions.py --update NAME  # bump one (or --update-all)
+scripts/update-pi-extensions.py --rehash       # re-capture npm hashes after a nodejs bump
 ```
 
-The script checks GitHub for the latest tag of each extension, then rewrites `pi/packages.nix`:
+A `hash mismatch in fixed-output derivation … node-modules` error after a nixpkgs bump is expected: the build is reporting the new npm hash. `--rehash` captures it.
 
-* `version` / `tag` and the `fetchFromGitHub` source hash (`nix flake prefetch`)
-* the npm `node_modules` hash by setting `npmHash = pkgs.lib.fakeHash`, building, and capturing the `got:` hash from nix's error channel — no manual copy/paste
-
-It ends with `nix flake check`. Review the diff (`git diff pi/packages.nix`) and activate with `sudo nixos-rebuild switch --flake .#nixos --accept-flake-config`. Extensions are also exposed as flake packages, so a single one can be rebuilt (or its pin verified) with `nix build '.#pi-subagents'`.
-
-### If a pi extension hash mismatches
-
-A `nixpkgs` bump of `nodejs`/`npm` changes what the pi extension fixed-output derivations produce:
-
-```
-error: hash mismatch in fixed-output derivation '...-pi-web-access-node-modules-0.31.0.drv'
-         specified: sha256-...
-            got:    sha256-...
-```
-
-That is not a breakage — the build is reporting the new hash. Either let `scripts/update-pi-extensions.py` re-capture it, or do it by hand: set that extension's `npmHash = pkgs.lib.fakeHash;` in `pi/packages.nix`, build the extension, then paste the reported value:
-
-```bash
-nix build --no-link '.#pi-web-access'   # or .#mcp-adapter / .#pi-subagents / .#rpiv-todo
-```
-
-Pi subagents (scout/researcher/evidence-auditor/oracle/worker/reviewer) are generic — work in any project cwd, not just `niri-desktop`. Defaults: main session and every child use the virtual `auto` router (`opencode-go/auto`) at high thinking (it dispatches to the cheapest adequate physical model; deepseek is excluded for tool work because it leaks DSML tool calls as text). Researcher uses `pi-web-access` (`web_search`/`fetch_content`/`source_check`). MCP is a separate namespace: `pi-mcp-adapter` exposes one `mcp` proxy tool for all servers (`veridb` today) — a child that needs it must run as a background child (`async: true`).
-
-A `nixpkgs` bump of `nodejs`/`npm` changes what the pi extension fixed-output derivations produce:
-
-```
-error: hash mismatch in fixed-output derivation '...-pi-web-access-node-modules-0.31.0.drv'
-         specified: sha256-...
-            got:    sha256-...
-```
-
-That is not a breakage — the build is reporting the new hash. Set that extension's `npmHash = pkgs.lib.fakeHash;` in `pi/packages.nix`, build it, then paste the reported value:
-
-```bash
-nix build --no-link --impure --expr '
-  let pkgs = (builtins.getFlake (toString ./.)).inputs.nixpkgs.legacyPackages.x86_64-linux;
-      ext = import ./pi/packages.nix { inherit pkgs; };
-  in ext.pi-web-access'   # or ext.mcp-adapter / ext.pi-subagents / ext.rpiv-todo
-```
-
-Pi subagents (scout/researcher/evidence-auditor/oracle/worker/reviewer) are generic — work in any project cwd, not just `niri-desktop`. Defaults: the virtual `auto` router (`opencode-go/auto`) at high thinking for the main session and every child (→ cheapest adequate physical model; deepseek is excluded for tool work because it leaks DSML tool calls as text). Researcher uses `pi-web-access` (`web_search`/`fetch_content`/`source_check`). MCP is a separate namespace: `pi-mcp-adapter` exposes one `mcp` proxy tool for all servers (`veridb` today) — a child that needs it must run as a background child (`async: true`).
-
-See [Rollback & tags](#rollback--tags) for backing out of an update.
-
-## Screenshots
-
-> Placeholders — replace with actual captures before publishing.
-
-| Desktop | Terminal | Files |
-|---|---|---|
-| ![desktop](assets/screenshots/01-desktop.png) | ![terminal](assets/screenshots/02-terminal.png) | ![files](assets/screenshots/03-files.png) |
-| Bar + wallpaper + islands | Ghostty + Starship + Gruvbox Dark | Nautilus + Tela-circle-orange-dark |
-
-| Launcher | Control Center | Multi-monitor |
-|---|---|---|
-| ![launcher](assets/screenshots/04-launcher.png) | ![control-center](assets/screenshots/05-control-center.png) | ![multi](assets/screenshots/06-multi.png) |
-| DMS spotlight (`Mod+D`, fuzzel fallback) | DMS control-center (`Mod+Ctrl+C`) | `eDP-1` + `HDMI-A-1` extend/mirror (`Mod+M`) |
-
-Capture:
-```bash
-mkdir -p assets/screenshots
-# fullscreen / region
- grim assets/screenshots/01-desktop.png
- # with windows open, then:
- grim assets/screenshots/02-terminal.png
-```
-`assets/screenshots/` is tracked — add real `*.png` before push (keep placeholders until then).
-
-## Rollback & tags
-
-```
-v0.1-foundation, v1.0, v1.1 (SDDM cursor + wl-mirror)
-```
+## Rollback
 
 ```bash
 sudo nixos-rebuild switch --rollback
 git log --oneline --tags
 ```
-
-## Contributing
-
-Public repo — no secrets, no `hardware-configuration.nix` churn without reason, small validated commits (`nix flake check` + `dry-build` before push).
-
-## License
-
-MIT — see `LICENSE` (if absent, treat as MIT for now).

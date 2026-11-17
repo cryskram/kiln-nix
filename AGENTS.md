@@ -144,6 +144,12 @@ If none exists, establish one deliberately.
 
 Do not introduce multiple formatters for the same language without reason.
 
+The configured formatter is `nix fmt` (treefmt: nixfmt for Nix, Biome for
+`pi/extensions` TypeScript, shfmt for shell scripts).
+
+Keep comments rare: at most two per file, and only for non-obvious *why*.
+Longer rationale belongs in `ARCHITECTURE.md` or `docs/decisions/`.
+
 ---
 
 # 8. Flake Inputs
@@ -177,7 +183,7 @@ Do not create an independent imperative Pi installation (`~/.pi` config, global
 installs, ad-hoc extensions) unless explicitly requested. The repository is the
 source of truth, and every change must reproduce on a fresh system.
 
-Pi customization lives in `modules/core.nix` (`programs.pi.coding-agent`):
+Pi customization lives in `modules/pi/default.nix` (`programs.pi.coding-agent`):
 
 * skills → `pi/skills/` (`skills`); repo-owned: `repo-understanding`, `learnings` (shared journal `pi/skills/learnings/LEARNINGS.md`), and the evidence-only `vageesh` scaffold; company skills stay outside the repo (`~/Projects/TAP/…` via `extraArgs --skill`)
 * extensions → `pi/packages.nix` + `pi/extensions/*.ts` (`extensions`):
@@ -186,8 +192,9 @@ Pi customization lives in `modules/core.nix` (`programs.pi.coding-agent`):
   * `zentui` — footer/status TUI
   * `pi-subagents` — scout/researcher/evidence-auditor/oracle/worker/reviewer/delegate (generic, any cwd; default model `auto` via jev; all built-ins explicitly inherit shared global/project context and skills; avoid `deepseek-*` because it leaks tool calls as text)
   * `pi-web-access` — `web_search`/`fetch_content`/`source_check` for researcher/evidence-auditor; coexists with native MCP parallel-search (different tool namespaces)
-  * `pi-guard` — permission gate for tool calls (bash parsed as an AST, file paths, MCP); policy is declarative under `settings.guard` in `modules/core.nix` — quiet for ordinary work, `deny`/`ask` only for destructive operations. Unlisted tools fall through to `ask`, so a new extension or MCP server needs its tools added there
+  * `pi-guard` — permission gate for tool calls (bash parsed as an AST, file paths, MCP); policy is declarative in `modules/pi/guard.nix` — quiet for ordinary work, `deny`/`ask` only for destructive operations. Unlisted tools fall through to `ask`, so a new extension or MCP server needs its tools added there
   * local: `querion-sync.ts` (`/sync`), `stash.ts` (`Alt+S` parks the editor draft and clears the editor, `Alt+S` again restores it; `/stash-history` for past drafts; the active stash rides the session branch so `/reload` and resume keep it)
+* MCP servers → `modules/pi/mcp.nix` (`~/.pi/agent/mcp.json`); each server's direct `<server>_<tool>` names also need rules in `modules/pi/guard.nix`
 * shared Pi brain → `pi/brain/README.md` documents ownership; `pi/brain/AGENTS.md` is installed as user-level `~/.pi/agent/AGENTS.md`; `pi/brain/APPEND_SYSTEM.md` is passed through `rules` as `--append-system-prompt` (never replace Pi's built-in prompt with `SYSTEM.md`)
 * context → `pi/context.md` (runnable project context, <100 lines) + repo-root `context.md` symlink → `pi/context.md`; repository-root `AGENTS.md` is the niri-desktop-specific operating manual; shared preferences and discoveries live in the `learnings` journal
 * prompt templates → intentionally empty (`pi/prompts/.gitkeep`, `promptTemplates = [ ]`) — skills preferred over prompts (see pi docs: skills carry description + on-demand loading)

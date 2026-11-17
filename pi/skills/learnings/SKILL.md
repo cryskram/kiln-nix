@@ -80,6 +80,6 @@ Source: learned from README + failed switch.
 ## Rules
 
 - The repo is the source of truth. All learnings persist as files in `pi/skills/learnings/` and are committed via `nixos-rebuild dry-build` validated changes — never imperative `~/.pi` edits.
-- Keep office skills (`Projects/TAP/...` via `extraArgs` in `modules/core.nix`) authoritative for domain work; learnings complement, not override, them.
+- Keep office skills (`Projects/TAP/...` via `extraArgs` in `modules/pi/default.nix`) authoritative for domain work; learnings complement, not override, them.
 - Never commit secrets. If a learning touches a secret boundary, describe the pattern, not the value.
 - This file (`SKILL.md`) is instructions — do not put journal entries here. Journal lives in `LEARNINGS.md`.

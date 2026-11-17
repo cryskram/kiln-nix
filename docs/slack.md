@@ -1,7 +1,7 @@
 # Slack in Pi
 
 Pi gets Slack through `korotovsky/slack-mcp-server` (Go, packaged as
-`pkgs/slack-mcp-server.nix`, wrapped and declared in `modules/core.nix`). Posting
+`pkgs/slack-mcp-server.nix`, wrapped and declared in `modules/pi/mcp.nix`). Posting
 goes out **as you**, so "message Priya that I'll be late to the sync" is a DM from
 your account — not from a bot that Priya has to trust.
 
@@ -135,7 +135,7 @@ Upstream priority is `xoxp` > `xoxb` > `xoxc/xoxd`, so the app token wins over a
 browser session once present — and a **bot** token (`xoxb`) cannot search, because
 `search.messages` is user-token-only.
 
-Non-secret knobs live in the `slack` entry in `modules/core.nix` (`env` block, next
+Non-secret knobs live in the `slack` entry in `modules/pi/mcp.nix` (`env` block, next
 to the commented `SLACK_MCP_ADD_MESSAGE_TOOL` example): channel-restricted posting,
 `SLACK_MCP_USER_AGENT` / `SLACK_MCP_CUSTOM_TLS` for Enterprise workspaces, and
 `SLACK_MCP_LOG_LEVEL`.
@@ -174,7 +174,7 @@ printf '%s\n' \
 ```
 
 `tools/list` must name the six enabled tools; anything else means the
-`--enabled-tools` list in `modules/core.nix` drifted from upstream.
+`--enabled-tools` list in `modules/pi/mcp.nix` drifted from upstream.
 
 ## Troubleshooting
 

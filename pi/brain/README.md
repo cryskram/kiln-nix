@@ -14,7 +14,7 @@ This is the source map for Vageesh's declarative Pi guidance. It is intentionall
 | `pi/skills/learnings/` | Shared durable preferences, decisions, and gotchas | `SKILL.md` defines the read/write protocol; `LEARNINGS.md` is the journal |
 | `pi/skills/vageesh/` | Future personal decision-style skill | Scaffold only; use only when explicitly relevant, and do not invent missing profile data |
 
-Pi's built-in `SYSTEM.md` **replaces** its default system prompt, so this setup deliberately does not use it. Built-in Pi subagents are explicitly configured in `modules/core.nix` to inherit project context, global context, and skills; they otherwise omit some of this shared brain by default. `APPEND_SYSTEM.md` is not a second journal: stable instructions belong in the guidance files, and dated observations belong in `LEARNINGS.md`.
+Pi's built-in `SYSTEM.md` **replaces** its default system prompt, so this setup deliberately does not use it. Built-in Pi subagents are explicitly configured in `modules/pi/default.nix` to inherit project context, global context, and skills; they otherwise omit some of this shared brain by default. `APPEND_SYSTEM.md` is not a second journal: stable instructions belong in the guidance files, and dated observations belong in `LEARNINGS.md`.
 
 ## Authority and change rules
 

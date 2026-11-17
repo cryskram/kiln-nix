@@ -4,22 +4,22 @@ This is the runnable context for every pi session in this repo. Read it alongsid
 
 ## What this repo is
 
-Reproducible NixOS desktop/workstation around **Niri** (scrollable tiling) + **Dux Shell** (renamed from DankMaterialShell; `dms` binary, `modules/dms-shell.nix`) — Catppuccin Macchiato, Wayland-native, on `nixos-26.05`. The Git repo is the **single source of truth**; `nixos-rebuild` reproduces the system from `flake.nix`. See `README.md`, `AGENTS.md` (§2 Source of Truth), and `RICE.md` for the visual spec.
+Reproducible NixOS desktop/workstation around **Niri** (scrollable tiling) + **Dux Shell** (renamed from DankMaterialShell; `dms` binary, `modules/dms-shell.nix`) — Gruvbox Dark, Wayland-native, on `nixos-26.05`. The Git repo is the **single source of truth**; `nixos-rebuild` reproduces the system from `flake.nix`. See `README.md`, `ARCHITECTURE.md` (the why), `AGENTS.md`, and `RICE.md` for the visual spec.
 
 ## Stack & pins
 
 - **Nix:** `nixpkgs` `nixos-26.05`, `nixpkgs-unstable` (one imported instance; overlays `pi-coding-agent`, `opencode`, `herdr`, `claude-code`, `dux-shell`, `quickshell`), `home-manager` `release-26.05`, `pi` via `lukasl-dev/pi.nix`, `spicetify-nix`. The unstable overlay is `import nixpkgs-unstable { config = prev.config; }` — `.legacyPackages` carries nixpkgs' defaults and refuses unfree packages (`claude-code`).
-- **Compositor/shell:** Niri (config validated by `nix flake check`), Noctalia/QML islands, SDDM Astronaut, Gruvbox tokens (`theme/tokens.nix`).
-- **Pi:** Declarative via `modules/core.nix` (`programs.pi.coding-agent`): `pi/brain/APPEND_SYSTEM.md` → `--append-system-prompt`, `pi/brain/AGENTS.md` → global Pi context at `~/.pi/agent/AGENTS.md`, `pi/brain/` → shared lookup path `~/.pi/agent/brain/`, `pi/skills/` → `--skill`, `pi/extensions/*.ts` → `--extension`, `pi/themes/` → `--theme`. Office skills live outside the repo (`~/Projects/TAP/...`) via `extraArgs --skill` — do not duplicate. Quick `pi --list` should show `mcp-adapter, pi-btw, rpiv-*, zentui, pi-subagents, pi-web-access`.
+- **Compositor/shell:** Niri (config validated by `nix flake check`), Dux Shell, SDDM Astronaut, Gruvbox tokens (`theme/tokens.nix` — the only place colours are defined).
+- **Pi:** Declarative via `modules/pi/` (`default.nix` → `programs.pi.coding-agent`, `guard.nix` → permissions, `mcp.nix` → MCP servers): `pi/brain/APPEND_SYSTEM.md` → `--append-system-prompt`, `pi/brain/AGENTS.md` → global Pi context at `~/.pi/agent/AGENTS.md`, `pi/brain/` → shared lookup path `~/.pi/agent/brain/`, `pi/skills/` → `--skill`, `pi/extensions/*.ts` → `--extension`, `pi/themes/` → `--theme`. Office skills live outside the repo (`~/Projects/TAP/...`) via `extraArgs --skill` — do not duplicate. Quick `pi --list` should show `mcp-adapter, pi-btw, rpiv-*, zentui, pi-subagents, pi-web-access`.
 - **Dev:** `devenv` + `direnv` + Docker; language toolchains (Go/Java/Node/Python/Rust) and apps (Ghostty, Chrome, Slack, etc.) via `home/development.nix` + `applications.nix`.
 
 ## Layout (where things live)
 
 ```
 flake.nix / configuration.nix / hardware-configuration.nix
-modules/{core,theme,shell,niri,sddm,docker,direnv,vpn}.nix   # system
-home/{niri,shell,development,git,direnv,...}.nix              # HM user
-theme/tokens.nix + dms-gruvbox.json                            # tokens
+modules/{nix,core,dms-shell,niri,sddm,vpn,...}.nix, modules/pi/  # system (modules/default.nix imports all)
+home/{niri,desktop,theme,shell,...}.nix, home/scripts/*.sh       # HM user (home/default.nix imports all)
+theme/tokens.nix                                                 # palette + semantic colours
 pi/brain/{AGENTS,APPEND_SYSTEM,README}.md, pi/context.md, pi/skills/, pi/extensions/, pi/themes/  # Pi declarative
 dev/{shared,templates,company}/                               # personal devenvs (company stays detached)
 ```
@@ -29,17 +29,17 @@ dev/{shared,templates,company}/                               # personal devenvs
 1. **Inspect** repo + relevant module before editing (AGENTS.md §4).
 2. **Small change** through the flake/module structure — never `~/.pi` imperative edits. Company `dev/company/*.nix` never touches company repos directly.
 3. **Validate** `nix flake check` and `nixos-rebuild dry-build --flake .#nixos` before claiming success.
-4. **Format** with `nix fmt` (nixfmt). No competing formatters.
+4. **Format** with `nix fmt` (treefmt: nixfmt, biome for TS, shfmt). At most two comments per file; rationale goes to `ARCHITECTURE.md`.
 5. **Git**: `git status/diff` before commit; conventional commits `type(scope): summary`; scan for secrets; never `reset --hard`/`push -f` without confirmation.
-6. **Flake inputs**: update one at a time with dry-run cost preview (`nix build --dry-run ... | grep drv`); `noctalia` always rebuilds (~15min). See README § Updating inputs.
+6. **Flake inputs**: update one at a time with a dry-run cost preview. See README § Updating.
 
 ## Pi conventions
 
 - **Memory**: `pi/skills/learnings/` is the shared journal (`SKILL.md` = instructions, `LEARNINGS.md` = data). Read at start, append on signal — `pi/brain/APPEND_SYSTEM.md` + global `AGENTS.md` enforce the protocol.
-- **Delegation**: `modules/core.nix` explicitly enables inherited global context and skills for every built-in Pi subagent; the pi-subagents defaults otherwise omit them.
+- **Delegation**: `modules/pi/default.nix` explicitly enables inherited global context and skills for every built-in Pi subagent; the pi-subagents defaults otherwise omit them.
 - **Discovery**: Prefer `repo-understanding` for unfamiliar areas before coding; use `learnings` for preferences. `vageesh` is an evidence-only skill scaffold. Prompt templates (`pi/prompts/`) are intentionally empty — skills are the mechanism.
-- **Extensions**: `querion-sync.ts` (`/sync`) and `stash.ts` (`Alt+S` editor stash, `/stash`, `/stash-history`) are local; third-party are pinned in `pi/packages.nix` (withDeps pattern), including `pi-guard` — the permission gate whose bash/file/MCP policy lives under `settings.guard` in `modules/core.nix`. pi-guard matches tool rules by exact name and falls back to `ask` for anything unlisted (blocked, not prompted, in headless subagents), so its rule set enumerates every tool explicitly. Update pins via `scripts/update-pi-extensions.py`. `pi-lens` is a separate pin (`pkgs/pi-lens.nix`, npm tarball since the published package ships prebuilt dist) — LSP/lint/format feedback with 13 pi tools, all allowlisted in guard; its LSP/tool auto-install is disabled by `PI_LENS_DISABLE_*_INSTALL=1` because `nil` + `nixfmt` and the per-project devenv servers already provide what it needs.
-- **MCP**: `pi-mcp-adapter` (5.4.0, `pi/packages.nix`) owns MCP and replaces pi's built-in support (disabled declaratively via `settings.extensions = [ "-builtin:mcp" ]`). It exposes one `mcp` proxy tool, connects servers lazily, stops them after 10 idle minutes, and reads the same `~/.pi/agent/mcp.json` (declared in `modules/core.nix`). Currently `veridb` — a policy-controlled Postgres MCP whose binary is built in `~/Projects/veridb` and whose creds stay in its own `.env` — plus `bruno`, the official Bruno collections MCP (`pkgs/bruno-mcp.nix`, built from GitHub since it is unpublished), pinned to the TAP + PERSONAL workspaces in `~/Documents/bruno` so pi can list, inspect and *run* those API requests (runs are live traffic; per-request auth comes from the collections' own env files, nothing to sign in to). Check connectivity with `node <adapter>/cli.js doctor` (prints `veridb: ok, N tools`) or `/mcp` in a session; `pi mcp list` still reads the same files. `pi-web-access` gives `web_search/fetch/source_check` to subagents. Rationale: `docs/decisions/mcp.md`. A subagent that needs MCP must run as a background child (`async: true`) and list `mcp` in `tools` — foreground children never load ambient extensions, so the adapter is absent there.
+- **Extensions**: `querion-sync.ts` (`/sync`) and `stash.ts` (`Alt+S` editor stash, `/stash`, `/stash-history`) are local; third-party are pinned in `pi/packages.nix` (withDeps pattern), including `pi-guard` — the permission gate whose bash/file/MCP policy lives in `modules/pi/guard.nix`. pi-guard matches tool rules by exact name and falls back to `ask` for anything unlisted (blocked, not prompted, in headless subagents), so its rule set enumerates every tool explicitly. Update pins via `scripts/update-pi-extensions.py`. `pi-lens` is a separate pin (`pkgs/pi-lens.nix`, npm tarball since the published package ships prebuilt dist) — LSP/lint/format feedback with 13 pi tools, all allowlisted in guard; its LSP/tool auto-install is disabled by `PI_LENS_DISABLE_*_INSTALL=1` because `nil` + `nixfmt` and the per-project devenv servers already provide what it needs.
+- **MCP**: `pi-mcp-adapter` (`pi/packages.nix`) owns MCP and replaces pi's built-in support (disabled declaratively via `settings.extensions = [ "-builtin:mcp" ]`). It exposes one `mcp` proxy tool, connects servers lazily, stops them after 10 idle minutes, and reads the same `~/.pi/agent/mcp.json` (declared in `modules/pi/mcp.nix`). Currently `veridb` — a policy-controlled Postgres MCP whose binary is built in `~/Projects/veridb` and whose creds stay in its own `.env` — plus `bruno`, the official Bruno collections MCP (`pkgs/bruno-mcp.nix`, built from GitHub since it is unpublished), pinned to the TAP + PERSONAL workspaces in `~/Documents/bruno` so pi can list, inspect and *run* those API requests (runs are live traffic; per-request auth comes from the collections' own env files, nothing to sign in to). Check connectivity with `node <adapter>/cli.js doctor` (prints `veridb: ok, N tools`) or `/mcp` in a session; `pi mcp list` still reads the same files. `pi-web-access` gives `web_search/fetch/source_check` to subagents. Rationale: `docs/decisions/mcp.md`. A subagent that needs MCP must run as a background child (`async: true`) and list `mcp` in `tools` — foreground children never load ambient extensions, so the adapter is absent there.
 
 ## Quick commands
 
@@ -55,6 +55,6 @@ scripts/update-pi-extensions.py --check
 1. `pi/skills/learnings/LEARNINGS.md` → prior decisions/preferences
 2. `AGENTS.md` (+ `docs/decisions/*.md`) → architecture & policy
 3. `README.md` / `RICE.md` / `DEV_ENVIRONMENT.md` → spec & dev setup
-4. `modules/core.nix` → how pi is wired
+4. `modules/pi/` → how pi is wired
 
 Update this file when stack/layout/conventions change meaningfully; keep it <100 lines — detail belongs in `AGENTS.md`/`LEARNINGS.md`.

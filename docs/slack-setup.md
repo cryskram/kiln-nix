@@ -157,8 +157,7 @@ cp slack-message.ts ~/.pi/agent/extensions/
 ```
 
 Restart `pi` (or `/reload`). It needs no build step — pi loads TypeScript
-directly, and the comments in the file header referencing `modules/core.nix` are
-from the NixOS setup this came from; ignore them.
+directly. Its header comment refers to the NixOS setup it came from; ignore it.
 
 It reads `SLACK_MCP_SECRETS_DIR` (or the two env tokens) from §2, so there is no
 second credential to manage. If you use `pi-guard`, add rules for the two new

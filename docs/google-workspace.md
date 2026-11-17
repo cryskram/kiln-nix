@@ -3,7 +3,7 @@
 `/google` connects Google accounts the way `/login` picks a provider, and 13 tools
 work on Sheets, Docs and Drive using the selected account's own OAuth token.
 
-Loaded from `pi/extensions/google-workspace/` via `modules/core.nix`; tool calls
+Loaded from `pi/extensions/google-workspace/` via `modules/pi/default.nix`; tool calls
 are gated by the `google_*` rules in `settings.guard` there.
 
 ## One-time setup
@@ -115,7 +115,7 @@ refreshed automatically 60 s before expiry, and one refresh per account runs at 
   authorization URL, so it can be pasted anywhere.
 - **What the model can reach.** Tokens are never exposed to tools, but every read tool runs on
   the account's actual Drive, and `google_drive_write`/`google_api` can change real files and
-  sharing. Flip those two rules to `"ask"` in `modules/core.nix` to confirm each call — note
+  sharing. Flip those two rules to `"ask"` in `modules/pi/guard.nix` to confirm each call — note
   that `"ask"` blocks headless runs (subagents, `pi -p`).
 
 Verified: account store, PKCE/loopback sign-in, scope handling, account switching, tool
