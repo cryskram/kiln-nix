@@ -48,6 +48,8 @@
           claude-code
           dux-shell
           quickshell
+          hyprland
+          xdg-desktop-portal-hyprland
           ;
 
         opencode = final.callPackage ../pkgs/opencode2.nix { };

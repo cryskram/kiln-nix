@@ -1,35 +1,31 @@
-# Decision: Caelestia shell on niri
+# Decision: official Caelestia on Hyprland
 
-Date: 2026-11-17. Supersedes DMS as the default shell; DMS stays available (`desktop.shell = "dms"`).
+Date: 2026-11-17. Replaces niri + Dux Shell as the default session; that pairing remains selectable with `desktop.shell = "dms"`.
 
 ## Problem
 
-Upstream [Caelestia](https://github.com/caelestia-dots/shell) is Hyprland-only: workspaces, the active window, fullscreen detection and its keybinds all go through Hyprland IPC and Hyprland global shortcuts. It has no niri code path.
+[Caelestia](https://github.com/caelestia-dots/shell) is built for Hyprland: workspaces, the active window, fullscreen detection and every keybind go through Hyprland IPC and Hyprland global shortcuts.
 
 ## Alternatives
 
-| Option | State (Nov 2026) | Verdict |
-|---|---|---|
-| Upstream caelestia-dots/shell | active, no niri support | broken workspaces/active window under niri |
-| jutraim/niri-caelestia-shell | self-declared abandoned | no |
-| AyushKr2003/niri-caelestia-shell | archived 2026-06 | no |
-| luqmanishere/caelestia-niri | fork, 48 commits behind upstream | stale |
-| tadeasf/caelestia-niri | overlay + regex patches over upstream, imperative `build.py`, tied to their niri-gnome setup | not declarative |
-| **CrankyTitanO7/caelestia-shell-WM** | fork 1 commit behind upstream; generic `Wm` service with Hyprland/niri/Umbriel backends; ships upstream's Nix flake and Home Manager module | **chosen** |
+| Option | Verdict |
+|---|---|
+| Caelestia on niri via a community fork (CrankyTitanO7/caelestia-shell-WM; tried first, see Git history) | works, but a single-maintainer, AI-written fork; Hyprland-only features hidden |
+| Other niri ports (jutraim, AyushKr2003, luqmanishere, tadeasf) | abandoned, archived, stale or imperative |
+| **Official shell + official dots on Hyprland** | **chosen**: the configuration Caelestia is developed and tested against |
 
 ## Chosen
 
-The CrankyTitanO7 fork, consumed as a flake input (`inputs.caelestia`) that follows `nixpkgs-unstable`, with `general.windowManager = "Niri"`. Configuration lives in `modules/caelestia/`.
-
-- **Theme.** caelestia-cli's bundled `gruvbox` scheme is not Gruvbox (it is a teal Material palette). `modules/caelestia/scheme.nix` regenerates all three flavours, dark and light, from `theme/tokens.nix`, and the CLI package is overridden to ship them, so the theme picker offers a real Gruvbox.
-- **State.** Caelestia writes `~/.local/state/caelestia/{scheme.json,wallpaper/path.txt}` from its UI. Activation seeds them only when absent (Gruvbox medium dark, `pixel-watermill`), so picker choices survive rebuilds.
-- **CLI theme appliers are off** (`cli.json`): they rewrite GTK, Qt, fuzzel, terminal and other configs that Home Manager owns. Scheme changes recolour the shell only.
-- **Fonts.** The package pins fontconfig to its bundled fonts; the wrapper is patched to `--set-default` so the service can add Inter and JetBrains Mono from the tokens.
-- **Keybinds** are niri binds calling `caelestia-shell ipc call …` (see `home/niri.nix`); each has a fallback where one exists.
-- **Idle** is Caelestia's own monitor (lock at 5 min, DPMS off at 5.5 min); swayidle runs only under DMS.
+- **Inputs.** `caelestia-shell` (the official flake, following `nixpkgs-unstable`) and `caelestia-dots` (the official dotfiles, `flake = false`). Hyprland 0.57 comes from `nixpkgs-unstable` through the overlay, matching what the dots target.
+- **Hyprland config is the official Lua config, unchanged.** `modules/hyprland/` links `hyprland.lua`, `variables.lua`, `hyprland/` and `utils/` from the dots. Personal settings use the hooks the dots provide: `~/.config/caelestia/hypr-vars.lua` (apps, cursor; generated from Nix) and `hypr-user.lua` (`modules/hyprland/user.lua`: monitors, layout switching, scrolling binds).
+- **Validation.** `nix flake check` runs `Hyprland --verify-config` against exactly those files.
+- **Session.** UWSM (`hyprland-uwsm`) is the SDDM default. The dots start the shell, cliphist, gammastep and the keyring themselves.
+- **Theme.** caelestia-cli's bundled `gruvbox` scheme is a teal Material palette. `modules/caelestia/scheme.nix` generates real Gruvbox (hard/medium/soft, dark/light) from `theme/tokens.nix`. The CLI package ships it, and it seeds both the shell state and `hypr/scheme/default.lua`, so borders and shell start in Gruvbox. Only the CLI's `enableHypr` applier is on, so the theme picker recolours the shell and Hyprland borders, never files Home Manager owns.
+- **Fonts.** The shell's wrapper pins fontconfig to its bundled fonts; the package is patched to use a font set that includes Inter and JetBrains Mono from the tokens.
 
 ## Trade-offs
 
-- Single-maintainer fork, written with AI assistance, 0 stars. If it stalls, the `Wm` layer is the part to port; DMS is one option away.
-- quickshell (git) and the QML plugin build from source on input updates.
-- niri exposes no fullscreen state over IPC, so "hide over fullscreen" behaviours are limited (documented upstream in the fork).
+- The repository is still named `niri-desktop`; niri is now the alternative session.
+- quickshell (git) and the Caelestia QML plugin build from source on every input update.
+- The dots' `execs.lua` assumes Arch paths for polkit-gnome and the geoclue demo agent; those calls fail harmlessly, and the NixOS modules provide hyprpolkitagent and the geoclue agent instead.
+- `niri-display-toggle` is niri-specific; under Hyprland, monitors are configured in `user.lua`.

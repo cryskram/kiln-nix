@@ -20,7 +20,8 @@ ARCHITECTURE.md
 
 The repository is public.
 
-The goal is a reproducible NixOS desktop built around Niri.
+The goal is a reproducible NixOS desktop: Hyprland with the official Caelestia shell by default,
+niri with Dux Shell as the alternative (`desktop.shell`, see `docs/decisions/caelestia.md`).
 
 ---
 
@@ -307,7 +308,7 @@ NixOS
 Home Manager
 → user configuration
 
-Niri
+Hyprland (or niri)
 → compositor/window management
 
 Quickshell
@@ -336,9 +337,9 @@ Avoid duplicate functionality.
 
 ---
 
-# 14. Niri
+# 14. Compositor
 
-Niri owns:
+The compositor (Hyprland by default, niri for the DMS session) owns:
 
 * window management
 * focus
@@ -348,6 +349,10 @@ Niri owns:
 * monitor behavior
 
 Do not implement window-management logic in Quickshell.
+
+Hyprland's base config is the official Caelestia Lua config, linked unchanged from the
+`caelestia-dots` input. Personal changes go only in `modules/hyprland/user.lua` and the
+generated `hypr-vars.lua`; never fork the official files into the repo.
 
 ---
 
@@ -581,7 +586,7 @@ Before adding a dependency:
 2. inspect existing capabilities
 3. determine whether NixOS/Home Manager already provides it
 4. consider maintenance cost
-5. consider Wayland/Niri compatibility
+5. consider Wayland/Hyprland compatibility
 
 Do not install software simply because it is common in rice configurations.
 
@@ -772,7 +777,7 @@ Do not jump ahead unnecessarily.
 
 For example:
 
-Do not build elaborate Quickshell telemetry before Niri itself is stable.
+Do not build elaborate Quickshell telemetry before the compositor itself is stable.
 
 Do not build the final login screen before the underlying authentication architecture is selected.
 

@@ -12,7 +12,8 @@ modules/                  NixOS modules (imported by modules/default.nix)
   nix.nix                 nix settings, GC, nixpkgs-unstable overlay
   core.nix                Home Manager wiring, session variables, desktop services
   pi/                     pi coding agent: default.nix (agent), guard.nix (permissions), mcp.nix (MCP servers)
-  desktop.nix             `desktop.shell` option: caelestia | dms
+  desktop.nix             `desktop.shell` option: caelestia (Hyprland) | dms (niri)
+  hyprland/               Hyprland session: official Caelestia Lua config + user.lua overrides
   caelestia/              Caelestia shell: package overrides, generated Gruvbox scheme, wallpapers
   dms-shell.nix           Dux Shell (DMS), the alternative shell
   niri, sddm, theme, shell, docker, ollama, direnv, vpn, tailscale, ssh, android
@@ -30,22 +31,27 @@ dev/                      devenv fragments and project templates
 ## Nix
 
 - **Unstable packages** come from one overlay in `modules/nix.nix`. It uses `import nixpkgs-unstable { config = prev.config; }` rather than `legacyPackages`, because `legacyPackages` carries nixpkgs' default config and refuses unfree packages such as `claude-code`.
-- **`nix flake check`** runs `niri validate` on the generated `config.kdl`, since Home Manager 26.05 has no niri module to type-check it.
+- **`nix flake check`** validates the active compositor config: `Hyprland --verify-config` on the installed Lua files, or `niri validate` on `config.kdl`.
 - **Formatting** is `nix fmt` (treefmt with nixfmt, Biome and shfmt).
 
 ## Visual system
 
 `theme/tokens.nix` is the only place colours are defined. `palette` holds raw Gruvbox Dark values; `colors` maps them to roles (`background`, `accent-primary`, `error`, …). Everything themed derives from it: niri borders, Ghostty, fuzzel, swaylock, fish, starship, Spotify (spicetify), Sioyek, the SDDM cursor, the Caelestia scheme (`modules/caelestia/scheme.nix`) and the DMS theme JSON.
 
-Blur is decorative. niri blurs every window and popup; Ghostty cannot request blur under niri, so its translucency (`background-opacity`) relies on niri's window rule. DMS requests blur for its own surfaces through `ext-background-effect`, so only the fuzzel fallback launcher has a layer rule; adding one for DMS double-applies and draws a tinted box around rounded popouts.
+Blur is decorative. Under Hyprland it comes from the official Caelestia config. Under niri, niri blurs every window and popup; Ghostty cannot request blur under niri, so its translucency (`background-opacity`) relies on niri's window rule. DMS requests blur for its own surfaces through `ext-background-effect`, so only the fuzzel fallback launcher has a layer rule; adding one for DMS double-applies and draws a tinted box around rounded popouts.
 
-## Desktop shell
+## Desktop session
 
-`desktop.shell` (`modules/desktop.nix`) selects the shell: `caelestia` (default) or `dms`. Each shell module is wrapped in `mkIf`, and `home/niri.nix` picks the matching keybinds, so exactly one shell, idle manager and bind set is active.
+`desktop.shell` (`modules/desktop.nix`) selects the session: `caelestia` (Hyprland, default) or `dms` (niri with Dux Shell). Every compositor and shell module is wrapped in `mkIf`, so exactly one compositor, shell, idle manager and bind set is active. `nix flake check` validates whichever is selected (`Hyprland --verify-config` or `niri validate`).
 
-**Caelestia** (`modules/caelestia/`) comes from a niri-capable fork; why that fork, and the trade-offs, are in [`docs/decisions/caelestia.md`](docs/decisions/caelestia.md). Its bundled Gruvbox scheme is wrong, so `scheme.nix` generates one from the tokens and the CLI package is overridden to ship it. Caelestia owns its state under `~/.local/state/caelestia`; activation seeds the scheme and wallpaper only on first run. The CLI's theme appliers are disabled because they would rewrite files Home Manager owns. Wallpapers are fetched by hash from AngelJumbo/gruvbox-wallpapers and linked file-by-file, because the wallpaper scanner does not follow symlinked directories.
+**Hyprland + Caelestia** follow the official project as closely as possible; why, and the alternatives tried, are in [`docs/decisions/caelestia.md`](docs/decisions/caelestia.md).
+- `modules/hyprland/` links the official Lua config from the `caelestia-dots` input unchanged. Personal settings go only through the hooks the dots read last: `hypr-vars.lua` (generated: apps, cursor) and `user.lua` (monitors, layout cycling, scrolling binds).
+- `modules/caelestia/` builds the official shell. caelestia-cli's bundled `gruvbox` scheme is a teal Material palette, so `scheme.nix` generates a real one from the tokens. The CLI is overridden to ship it, and it also seeds `hypr/scheme/default.lua`.
+- Caelestia owns its state under `~/.local/state/caelestia`; activation seeds the scheme and wallpaper only on first run.
+- Only the CLI's Hyprland applier is enabled: the others would rewrite files Home Manager owns.
+- Wallpapers are fetched by hash and linked file-by-file, because the wallpaper scanner does not follow symlinked directories.
 
-**Dux Shell** (formerly DankMaterialShell) rewrites its own `settings.json`, so the repo owns only its theme file. `DMS_DISABLE_MATUGEN=1` stops it regenerating colours from the wallpaper, and the AiOverviewControl plugin is patched on every activation.
+**niri + Dux Shell** (the alternative): Dux Shell rewrites its own `settings.json`, so the repo owns only its theme file; `DMS_DISABLE_MATUGEN=1` stops it re-colouring from the wallpaper.
 
 ## Pi
 

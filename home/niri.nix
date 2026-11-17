@@ -1,39 +1,14 @@
-{ osConfig, pkgs, ... }:
+{
+  lib,
+  osConfig,
+  pkgs,
+  ...
+}:
 let
   inherit (import ../theme/tokens.nix) colors;
 
-  ipc = args: "caelestia-shell ipc call ${args}";
-  shellBinds = {
-    caelestia = ''
-      "Mod+D" { spawn-sh "${ipc "drawers toggle launcher"} || fuzzel"; }
-      "Mod+Slash" { spawn-sh "${ipc "drawers toggle launcher"} || fuzzel"; }
-      "Mod+A" { spawn-sh "${ipc "drawers toggle dashboard"}"; }
-      "Mod+N" { spawn-sh "${ipc "drawers toggle sidebar"}"; }
-      "Mod+Ctrl+C" { spawn-sh "${ipc "drawers toggle utilities"}"; }
-      "Mod+P" { spawn-sh "${ipc "drawers toggle session"} || wlogout"; }
-      "Mod+Shift+E" { spawn-sh "${ipc "drawers toggle session"} || wlogout"; }
-      "Super+Alt+L" { spawn-sh "${ipc "lock lock"} || swaylock"; }
-      "Mod+Ctrl+V" { spawn "caelestia" "clipboard"; }
-      "Mod+Semicolon" { spawn "caelestia" "emoji" "-p"; }
-      "Mod+Shift+S" { spawn-sh "${ipc "picker openFreeze"}"; }
-      "Print" { spawn "caelestia" "screenshot"; }
-      "Mod+Shift+R" { spawn "caelestia" "record" "-r"; }
-    '';
-    dms = ''
-      "Mod+D" { spawn-sh "dms ipc call spotlight toggle || fuzzel"; }
-      "Mod+Slash" { spawn-sh "dms ipc call spotlight toggle || fuzzel"; }
-      "Mod+Ctrl+V" { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
-      "Mod+Ctrl+C" { spawn "dms" "ipc" "call" "control-center" "toggle"; }
-      "Mod+P" { spawn-sh "dms ipc call powermenu toggle || wlogout"; }
-      "Mod+Shift+E" { spawn "wlogout"; }
-      "Super+Alt+L" { spawn-sh "dms ipc call lock lock || swaylock"; }
-      "Mod+Shift+S" { spawn "dms" "screenshot"; }
-      "Print" { spawn "dms" "screenshot" "full"; }
-      "Mod+Shift+R" { spawn-sh "wf-recorder -g \"$(slurp -o)\" -f ~/Videos/recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"; }
-    '';
-  };
 in
-{
+lib.mkIf (osConfig.desktop.shell == "dms") {
   xdg.configFile."niri/config.kdl".text = ''
     include "${pkgs.niri.src}/resources/default-config.kdl"
 
@@ -99,7 +74,16 @@ in
     }
 
     binds {
-        ${shellBinds.${osConfig.desktop.shell}}
+        "Mod+D" { spawn-sh "dms ipc call spotlight toggle || fuzzel"; }
+        "Mod+Slash" { spawn-sh "dms ipc call spotlight toggle || fuzzel"; }
+        "Mod+Ctrl+V" { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
+        "Mod+Ctrl+C" { spawn "dms" "ipc" "call" "control-center" "toggle"; }
+        "Mod+P" { spawn-sh "dms ipc call powermenu toggle || wlogout"; }
+        "Mod+Shift+E" { spawn "wlogout"; }
+        "Super+Alt+L" { spawn-sh "dms ipc call lock lock || swaylock"; }
+        "Mod+Shift+S" { spawn "dms" "screenshot"; }
+        "Print" { spawn "dms" "screenshot" "full"; }
+        "Mod+Shift+R" { spawn-sh "wf-recorder -g \"$(slurp -o)\" -f ~/Videos/recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"; }
         "Mod+T" { spawn "ghostty"; }
         "Mod+Return" { spawn "ghostty"; }
         "Mod+M" { spawn "niri-display-toggle"; }

@@ -5,6 +5,7 @@
     ./pi
     ./desktop.nix
     ./caelestia
+    ./hyprland
     ./dms-shell.nix
     ./theme.nix
     ./shell.nix

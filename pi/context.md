@@ -4,12 +4,12 @@ This is the runnable context for every pi session in this repo. Read it alongsid
 
 ## What this repo is
 
-Reproducible NixOS desktop/workstation around **Niri** (scrollable tiling) + **the desktop shell** via `desktop.shell`: Caelestia (`modules/caelestia/`, default) or Dux Shell (`modules/dms-shell.nix`) — Gruvbox Dark, Wayland-native, on `nixos-26.05`. The Git repo is the **single source of truth**; `nixos-rebuild` reproduces the system from `flake.nix`. See `README.md`, `ARCHITECTURE.md` (the why), `AGENTS.md`, and `RICE.md` for the visual spec.
+Reproducible NixOS desktop/workstation: **Hyprland + official Caelestia** (`modules/hyprland/`, `modules/caelestia/`, default) or **niri + Dux Shell** via `desktop.shell` — Gruvbox Dark, Wayland-native, on `nixos-26.05`. The Git repo is the **single source of truth**; `nixos-rebuild` reproduces the system from `flake.nix`. See `README.md`, `ARCHITECTURE.md` (the why), `AGENTS.md`, and `RICE.md` for the visual spec.
 
 ## Stack & pins
 
 - **Nix:** `nixpkgs` `nixos-26.05`, `nixpkgs-unstable` (one imported instance; overlays `pi-coding-agent`, `opencode`, `herdr`, `claude-code`, `dux-shell`, `quickshell`), `home-manager` `release-26.05`, `pi` via `lukasl-dev/pi.nix`, `spicetify-nix`. The unstable overlay is `import nixpkgs-unstable { config = prev.config; }` — `.legacyPackages` carries nixpkgs' defaults and refuses unfree packages (`claude-code`).
-- **Compositor/shell:** Niri (config validated by `nix flake check`), Dux Shell, SDDM Astronaut, Gruvbox tokens (`theme/tokens.nix` — the only place colours are defined).
+- **Compositor/shell:** Hyprland with the official Caelestia Lua config (validated by `nix flake check`), Caelestia shell, SDDM Astronaut, Gruvbox tokens (`theme/tokens.nix` — the only place colours are defined).
 - **Pi:** Declarative via `modules/pi/` (`default.nix` → `programs.pi.coding-agent`, `guard.nix` → permissions, `mcp.nix` → MCP servers): `pi/brain/APPEND_SYSTEM.md` → `--append-system-prompt`, `pi/brain/AGENTS.md` → global Pi context at `~/.pi/agent/AGENTS.md`, `pi/brain/` → shared lookup path `~/.pi/agent/brain/`, `pi/skills/` → `--skill`, `pi/extensions/*.ts` → `--extension`, `pi/themes/` → `--theme`. Office skills live outside the repo (`~/Projects/TAP/...`) via `extraArgs --skill` — do not duplicate. Quick `pi --list` should show `mcp-adapter, pi-btw, rpiv-*, zentui, pi-subagents, pi-web-access`.
 - **Dev:** `devenv` + `direnv` + Docker; language toolchains (Go/Java/Node/Python/Rust) and apps (Ghostty, Chrome, Slack, etc.) via `home/development.nix` + `applications.nix`.
 

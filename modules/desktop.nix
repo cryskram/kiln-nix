@@ -6,6 +6,6 @@
       "dms"
     ];
     default = "caelestia";
-    description = "Desktop shell drawn on top of niri: bar, launcher, notifications, lock and wallpaper.";
+    description = "Desktop session: caelestia runs on Hyprland, dms runs on niri.";
   };
 }

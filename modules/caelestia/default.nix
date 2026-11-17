@@ -16,7 +16,7 @@ let
   wallpaperDir = "${home}/Pictures/Wallpapers";
   defaultWallpaper = "${wallpaperDir}/gruvbox/pixel-watermill.png";
 
-  cli = inputs.caelestia.inputs.caelestia-cli.packages.${system}.default.overrideAttrs (old: {
+  cli = inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.default.overrideAttrs (old: {
     postInstall =
       (old.postInstall or "")
       + "\n"
@@ -45,14 +45,19 @@ let
   };
 
   shell =
-    (inputs.caelestia.packages.${system}.caelestia-shell.override {
+    (inputs.caelestia-shell.packages.${system}.caelestia-shell.override {
       withCli = true;
       caelestia-cli = cli;
     }).overrideAttrs
       (old: {
+        # The wrapper pins fontconfig to the shell's own fonts; point it at a set that includes the UI fonts.
         postInstall =
-          assert lib.hasInfix "--set FONTCONFIG_FILE" old.postInstall;
-          builtins.replaceStrings [ "--set FONTCONFIG_FILE" ] [ "--set-default FONTCONFIG_FILE" ]
+          assert lib.hasInfix "--set FONTCONFIG_FILE \"" old.postInstall;
+          builtins.replaceStrings
+            [ "--set FONTCONFIG_FILE \"" ]
+            [
+              "--set FONTCONFIG_FILE \"${fontsConf}\" --set CAELESTIA_BUNDLED_FONTCONFIG \""
+            ]
             old.postInstall;
       });
 
@@ -65,16 +70,15 @@ lib.mkIf (config.desktop.shell == "caelestia") {
   home-manager.users.${user} =
     { lib, ... }:
     {
-      imports = [ inputs.caelestia.homeManagerModules.default ];
+      imports = [ inputs.caelestia-shell.homeManagerModules.default ];
 
       programs.caelestia = {
         enable = true;
         package = shell;
-        systemd.environment = [ "FONTCONFIG_FILE=${fontsConf}" ];
+        systemd.enable = false;
 
         settings = {
           general = {
-            windowManager = "Niri";
             apps = {
               terminal = [ "ghostty" ];
               audio = [ "pwvucontrol" ];
@@ -169,11 +173,9 @@ lib.mkIf (config.desktop.shell == "caelestia") {
             "enableChromium"
             "enableZed"
             "enableCava"
-          ] (_: false);
+          ] (applier: applier == "enableHypr");
         };
       };
-
-      services.cliphist.enable = true;
 
       home.packages = with pkgs; [
         pwvucontrol
