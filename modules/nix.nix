@@ -1,4 +1,9 @@
-{ inputs, user, ... }:
+{
+  config,
+  inputs,
+  user,
+  ...
+}:
 {
   nixpkgs.config.allowUnfree = true;
 
@@ -23,11 +28,15 @@
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       ];
     };
+  };
 
-    gc = {
-      automatic = true;
+  programs.nh = {
+    enable = true;
+    flake = "${config.users.users.${user}.home}/kiln-nix";
+    clean = {
+      enable = true;
       dates = "weekly";
-      options = "--delete-older-than 7d";
+      extraArgs = "--keep-since 7d --keep 5";
     };
   };
 
