@@ -1,4 +1,4 @@
--- Loaded last by hyprland.lua. Super+[ / Super+] keep Dux's dwindle preselect and resize columns in scrolling; Alt+Tab flips to the last-focused window.
+-- Loaded last by hyprland.lua. Super+[ / Super+] keep Dux's dwindle preselect and resize columns in scrolling.
 
 local layouts = { "dwindle", "scrolling", "master", "monocle" }
 
@@ -47,16 +47,3 @@ for key, message in pairs(scrolling) do
 end
 
 hl.bind("SUPER + ALT + V", hl.dsp.exec_cmd("vpn-toggle"))
-
-hl.bind("ALT + Tab", function()
-    local last = hl.get_last_window()
-    if last then
-        hl.dispatch(hl.dsp.focus({ window = last }))
-        hl.dispatch(hl.dsp.window.bring_to_top())
-    end
-end)
-
-hl.bind("ALT + SHIFT + Tab", function()
-    hl.dispatch(hl.dsp.window.cycle_next({ next = true }))
-    hl.dispatch(hl.dsp.window.bring_to_top())
-end)

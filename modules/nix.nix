@@ -58,6 +58,7 @@
           dux-shell
           quickshell
           hyprland
+          hyprshell
           xdg-desktop-portal-hyprland
           ;
 

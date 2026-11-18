@@ -31,6 +31,28 @@ in
     };
   };
 
+  services.hyprshell = {
+    enable = true;
+    settings = {
+      version = 4;
+      windows.switch.modifier = "alt";
+    };
+    style = with colors; ''
+      :root {
+        --bg-color: alpha(${background}, 0.88);
+        --bg-color-hover: ${surface};
+        --bg-window-color: ${background-deep};
+        --border-color: ${border};
+        --border-color-active: ${accent-primary};
+        --text-color: ${foreground};
+        --border-radius: 12px;
+        --border-size: 2px;
+        --border-style: solid;
+        --window-padding: 3px;
+      }
+    '';
+  };
+
   programs.fuzzel = {
     enable = true;
     settings = {
