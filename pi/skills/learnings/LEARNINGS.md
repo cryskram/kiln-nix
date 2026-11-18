@@ -9,6 +9,14 @@ Reverse chronological. Newest on top.
 
 Source: Alt+Tab switcher session 2026-11-18. Open upstream bug #537: rapid Alt+Tab taps can leave the switcher stuck.
 
+## 2026-11-18 — Zot as a Docker Hub mirror: docker2s2 and index-only warming (gotcha) — `dev/ci`
+
+- What: zot v2.1.23 on-demand sync rejects Docker-format images (`nginx:1.12` → `MANIFEST_UNKNOWN "synchronization failed"`) unless `http.compat: ["docker2s2"]`; add `preserveDigest: true` so digests match Docker Hub. Requesting a tag's manifest only syncs the **index** (280K for 12 images); layers come when the linux/amd64 manifest is requested.
+- Why/Context: a cold first pull can outlast docker's header timeout (nginx failed once, worked on retry). Re-checks of a cached tag cost **zero** Docker Hub allowance (measured 96→96 over 5 pulls; a direct GET cost 1).
+- How/Apply: warm by fetching the index, then the amd64 digest from it (`roles/ci_control/files/zot-warm.sh`); prove any zot config on a throwaway local container of the same version first.
+
+Source: phoenix CI mirror work 2026-11-18 — warmed 2.0G, cold pull 25s → warm 7s.
+
 ## 2026-11-18 — Debugging Hyprland binds: trace on a spare chord, never replace live ones (gotcha) — `hyprland/binds`
 
 - What: `hyprctl eval` + `hl.unbind`/`hl.bind` to trace Super+X/Print/Super+Space left all three dead for the user until `hyprctl reload`; `wtype` synthetic chords never trigger binds (typed `x` into the focused terminal instead).
@@ -26,6 +34,22 @@ Source: power menu/screenshot debugging 2026-11-18 — user: "none of these are 
 Supersedes: 2026-11-17 — Claude Code settings now owned by `home/claude-code.nix`
 Source: user request 2026-11-18.
 
+## 2026-11-17 — Wants to understand the code, not vibe-code (preference) — `workflow`
+
+- What: Vageesh is setting up Claude Code after pi/opencode and explicitly does not want to become a vibe coder; wants to understand and enjoy the process.
+- Why: stated directly when asking what to set up on the new Claude Code install.
+- How: favour plan-first, explain the why, keep diffs small and reviewable, leave design-relevant pieces for him to write when asked (Learning output style), and never bulk-apply changes he hasn't seen.
+
+Source: user statement 2026-11-17.
+
+## 2026-11-17 — Phoenix refactor: small batches, no tests in git, docs modular (preference) — `dev/phoenix`
+
+- What: do the refactor in bits on a branch, batching related changes; never push test files; comments 1–2 lines max, essays go to docs; docs stay modular and short — not merged into one file.
+- Why/Context: user review of the full repo audit ("dont do all of these in one go").
+- How/Apply: one concern per commit, prove each fix, stop for review between batches.
+
+Source: user answers to the phoenix audit, 2026-11-17.
+
 ## 2026-11-17 — Themes: own surfaces without a picker, only *offer* themes to apps that have one (preference) — `theme`
 
 - What: Everforest replaces Gruvbox; `theme/tokens.nix` now selects one `theme/palettes/<name>.nix` (common shape: `accents`, `colors`, `apps`), so a theme switch is one line. Vageesh rotates themes (Tokyo Night → Catppuccin → Gruvbox → Everforest), so expect more.
@@ -40,6 +64,14 @@ Source: Everforest switch session 2026-11-17.
 - How/Apply: for data files (not derivations) use `import ./file.nix { inherit (pkgs) fetchurl; }`.
 
 Source: flake check failure during the Everforest switch.
+
+## 2026-11-17 — A compose `restart:` fix only reaches containers recreated after it (gotcha) — `dev/phoenix`
+
+- What: v0.32.0 added `restart: unless-stopped` to the deploy template, yet ~107 fleet containers still had `RestartPolicy=no`; three's s9 sat fully Exited after a dockerd restart. All were deployed before the v0.32.0 build (2026-11-16 18:08).
+- Why/Context: the policy lives in each rendered `/srv/dev/<s>/<svc>/docker-compose.phoenix.yml`; old renders keep the old shape until that service is redeployed.
+- How/Apply: audit with `docker ps -aq | xargs docker inspect -f '{{.Name}} {{.HostConfig.RestartPolicy.Name}}' | grep ' no$'`; `docker update --restart unless-stopped <c>` fixes it in place without a recreate.
+
+Source: phoenix repo audit 2026-11-17 — s1-horizon shipped 15:58, binary built 18:08.
 
 ## 2026-11-17 — Claude Code settings now owned by `home/claude-code.nix` (decision) — `dev/claude`
 
