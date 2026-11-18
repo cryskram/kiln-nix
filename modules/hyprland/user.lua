@@ -47,3 +47,6 @@ for key, message in pairs(scrolling) do
 end
 
 hl.bind("SUPER + ALT + V", hl.dsp.exec_cmd("vpn-toggle"))
+
+-- Stock Dux sets 0; 2 sends scrolling to the hovered window while keyboard focus still needs a click.
+hl.config({ input = { follow_mouse = 2 } })
