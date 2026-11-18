@@ -2,6 +2,8 @@
 
 local layouts = { "dwindle", "scrolling", "master", "monocle" }
 
+hl.config({ general = { layout = "scrolling" } })
+
 hl.bind("SUPER + SHIFT + Space", function()
     local current = hl.get_config("general.layout")
     local next_layout = layouts[1]
