@@ -2,6 +2,13 @@
 
 Reverse chronological. Newest on top.
 
+## 2026-11-18 — hyprswitch is now hyprshell; only 4.10.9+ speaks Lua-config Hyprland (gotcha) — `hyprland/hyprshell`
+
+- What: hyprswitch was renamed hyprshell (H3rmt/hyprshell). Lua-config Hyprland rejects legacy IPC (`hyprctl dispatch focuswindow …` → Lua syntax error, `hyprctl keyword` → "unknown request"); hyprshell 4.10.9 ("fix new hyprland ipc handling", unstable overlay) works, stable's 4.10.4 predates it. HM's `config.json` is auto-discovered despite the docs listing only ron/toml/json5; set `version = 4` or it warns.
+- How/Apply: enable only `windows.switch` (no `overview` key = overview+launcher off; Dux owns those). Live-test with `hyprshell socat '{"OpenSwitch":{"reverse":false}}'` + `grim`, then `hyprctl reload` to drop its runtime binds. Never `pkill -f` a pattern that appears in your own command line (use `kiln[.]x` only if the literal string is absent from the command) — it kills the calling shell (exit 144).
+
+Source: Alt+Tab switcher session 2026-11-18. Open upstream bug #537: rapid Alt+Tab taps can leave the switcher stuck.
+
 ## 2026-11-18 — Debugging Hyprland binds: trace on a spare chord, never replace live ones (gotcha) — `hyprland/binds`
 
 - What: `hyprctl eval` + `hl.unbind`/`hl.bind` to trace Super+X/Print/Super+Space left all three dead for the user until `hyprctl reload`; `wtype` synthetic chords never trigger binds (typed `x` into the focused terminal instead).
