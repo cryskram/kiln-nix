@@ -9,6 +9,7 @@ rec {
     nvim
     pi
     wallpapers
+    loginWallpaper
     ;
 
   palette = active.accents;

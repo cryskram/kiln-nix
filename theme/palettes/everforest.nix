@@ -103,5 +103,6 @@ rec {
     };
     pi = "everforest-dark";
     wallpapers = "everforest";
+    loginWallpaper = "fog-forest.png";
   };
 }

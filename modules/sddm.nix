@@ -7,7 +7,10 @@ let
   astronaut = pkgs.sddm-astronaut.override {
     themeConfig = {
       Font = fonts.ui;
-      Background = "${(builtins.head wallpapers.${tokens.wallpapers}).path}";
+      Background = "${(lib.findFirst (
+        w: w.name == tokens.loginWallpaper
+      ) null wallpapers.${tokens.wallpapers}).path
+      }";
       DimBackground = "0.2";
       HeaderTextColor = colors.foreground;
       DateTextColor = colors.foreground;

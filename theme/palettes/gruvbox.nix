@@ -108,5 +108,6 @@ rec {
     };
     pi = "gruvbox-dark";
     wallpapers = "gruvbox";
+    loginWallpaper = "pixel-watermill.png";
   };
 }

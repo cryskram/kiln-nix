@@ -143,5 +143,6 @@ rec {
     };
     pi = "catppuccin-${flavour}";
     wallpapers = "catppuccin";
+    loginWallpaper = "space-piano.png";
   };
 }
