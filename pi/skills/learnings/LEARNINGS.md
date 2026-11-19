@@ -10,6 +10,36 @@ Reverse chronological. Newest on top.
 
 Source: Alt+Tab preview session 2026-11-19.
 
+## 2026-11-19 — Branches are release/*; no subagents unless unavoidable (preference) — `dev/git`
+
+- What: name every new branch `release/<change>`; in bond-scanner use `release/<name>/<message>` so husky's `<type>/<name>/<message>` rule passes. Do work inline; spawn a subagent only when there is no other way.
+- Why/Context: user correction mid-task on the phoenix ship work (the doc/comment sweeps had been delegated to subagents).
+- How/Apply: check for `.husky/` before naming a branch in a service repo; verify and edit directly.
+
+Source: user instruction 2026-11-19.
+
+## 2026-11-18 — vm_benchmark_kit smoke test poisons the real run via the vmbench-models volume (gotcha) — `dev/benchmark`
+
+- What: step 3 says only `rm -rf out` after the smoke test, but SMOKE=1 downloads bge-small/MiniLM into the persistent `vmbench-models` volume at the same paths as bge-m3/reranker. The real run then failed embed (`size mismatch 384 vs 1024`, rc=1) and rerank carried +296 MB of stale files.
+- How/Apply: after a smoke test also `docker volume rm vmbench-models vmbench-data vmbench-pg` before the full run; check `model_size_MB` (bge-m3 reranker 2294) against baseline. Also: detached `ssh '( … &)'` launches can hang the local client; wrap in `timeout 30 ssh -n`.
+
+Source: CloudPe benchmark 2026-11-18, cloudpe-cpu-4v.
+
+## 2026-11-18 — Claude Code custom themes don't reach markdown (gotcha) — `dev/claude`
+
+- What: `~/.claude/themes/*.json` overrides (`{name, base, overrides}`) recolour the UI chrome, but inline code in replies stays the stock base colour (`dark` → `permission` = `rgb(177,185,249)`). In 2.1.322 the markdown renderer reads the theme hook's `currentTheme` (only the base name) instead of `resolvedTheme` (base + overrides).
+- How/Apply: no theme-file fix exists, because no built-in base has a non-blue `permission`. Trace theme questions in the binary via `Qlt()` (merges overrides) vs the `Gr()` hook (`[currentTheme, setter]`); re-check after Claude Code upgrades.
+
+Source: Catppuccin theme work 2026-11-18 — user: "inline code colors are still not green".
+
+## 2026-11-18 — Nix flakes ignore untracked files, so new modules fail dry-build (gotcha) — `dev/nix`
+
+- What: `nixos-rebuild dry-build --flake .#nixos` failed with `Path 'home/scripts/claude-notify.sh' … is not tracked by Git` the moment a new script was referenced from `home/claude-code.nix`.
+- Why/Context: flakes copy only git-tracked files into the store, so a brand-new file looks missing even though it is on disk.
+- How/Apply: `git add -N <newfiles>` (intent-to-add) before validating; then `git reset -q -- <files>` to unstage so the commit stays composed by hand. `nix fmt -- <files>` is the formatter entry point (treefmt; paths as args).
+
+Source: Claude Code status line/notify/output-style wiring, 2026-11-18.
+
 ## 2026-11-18 — hyprswitch is now hyprshell; only 4.10.9+ speaks Lua-config Hyprland (gotcha) — `hyprland/hyprshell`
 
 - What: hyprswitch was renamed hyprshell (H3rmt/hyprshell). Lua-config Hyprland rejects legacy IPC (`hyprctl dispatch focuswindow …` → Lua syntax error, `hyprctl keyword` → "unknown request"); hyprshell 4.10.9 ("fix new hyprland ipc handling", unstable overlay) works, stable's 4.10.4 predates it. HM's `config.json` is auto-discovered despite the docs listing only ron/toml/json5; set `version = 4` or it warns.
