@@ -15,6 +15,7 @@ in
       init.defaultBranch = "main";
       pull.rebase = false;
       push.autoSetupRemote = true;
+      branch.autoSetupMerge = "simple";
       merge.conflictstyle = "zdiff3";
       diff.colorMoved = "default";
       core.editor = "nvim";
