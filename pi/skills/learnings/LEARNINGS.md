@@ -2,6 +2,14 @@
 
 Reverse chronological. Newest on top.
 
+## 2026-11-19 — Alt+Tab previews: nothing off the shelf; custom switcher deferred (decision) — `hyprland/switcher`
+
+- What: hyprshell 4.10.9 has no window previews (upstream #26/#424/#477 open); Dux's Super+Tab overview has live `ScreencopyView` previews but no Enter handler (Esc or a click closes it, `HyprlandOverview.qml:197`). User declined a from-scratch switcher: "its fine, dont do it. lets see for the future".
+- Why/Context: if revisited, the design was a standalone Quickshell 0.3.2 config in `quickshell/switcher/` (user service + IPC, MRU from Hyprland focus history, commit on a Hyprland Alt-release bind to dodge hyprshell #537), built in three milestones with hyprshell kept until replaced.
+- How/Apply: don't re-investigate previews; point to Super+Tab for visual picking and keep hyprshell for quick flips.
+
+Source: Alt+Tab preview session 2026-11-19.
+
 ## 2026-11-18 — hyprswitch is now hyprshell; only 4.10.9+ speaks Lua-config Hyprland (gotcha) — `hyprland/hyprshell`
 
 - What: hyprswitch was renamed hyprshell (H3rmt/hyprshell). Lua-config Hyprland rejects legacy IPC (`hyprctl dispatch focuswindow …` → Lua syntax error, `hyprctl keyword` → "unknown request"); hyprshell 4.10.9 ("fix new hyprland ipc handling", unstable overlay) works, stable's 4.10.4 predates it. HM's `config.json` is auto-discovered despite the docs listing only ron/toml/json5; set `version = 4` or it warns.
