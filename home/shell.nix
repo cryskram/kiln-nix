@@ -59,7 +59,7 @@ let
   bold = color: "bold ${color}";
   segment = color: {
     style = bold color;
-    format = "[$symbol$version](${bold color}) ";
+    format = "[\\($symbol$version\\)](${bold color}) ";
   };
 in
 {
@@ -107,31 +107,28 @@ in
     enable = true;
     settings = {
       add_newline = true;
-      format = "$directory$git_branch$git_status$git_metrics$line_break$character";
-      right_format = "$cmd_duration$direnv$nix_shell$container$golang$nodejs$python$rust$java";
+      format = "$directory$git_branch$git_status$git_metrics$nix_shell$direnv$container$golang$nodejs$python$rust$java$line_break$character";
       character = {
-        success_symbol = "[❯](${bold accent})";
-        error_symbol = "[❯](${bold p.red})";
-        vicmd_symbol = "[❮](${bold p.blue})";
+        success_symbol = "[>](${bold accent})";
+        error_symbol = "[>](${bold p.red})";
+        vicmd_symbol = "[>](${bold p.blue})";
       };
       directory = {
         style = bold accent;
-        format = "[ $path]($style)[$read_only]($read_only_style) ";
         truncation_length = 3;
         truncate_to_repo = true;
       };
       git_branch = {
         style = bold p.blue;
-        symbol = " ";
-        format = "[$symbol$branch]($style) ";
+        format = "[\\($branch\\)](${bold p.blue}) ";
       };
       git_status = {
         style = bold p.yellow;
         format = "([\\[$all_status$ahead_behind\\]]($style) )";
         stashed = "\\$";
-        ahead = "⇡$count";
-        behind = "⇣$count";
-        diverged = "⇕⇡$ahead_count⇣$behind_count";
+        ahead = "⇡$count ";
+        behind = "⇣$count ";
+        diverged = "⇕⇡$ahead_count⇣$behind_count ";
         modified = "!";
         staged = "+";
         renamed = "»";
@@ -147,28 +144,28 @@ in
       nix_shell = {
         symbol = " ";
         style = bold p.aqua;
-        format = "[$symbol]($style)";
+        format = "[\\($symbol$state\\)](${bold p.aqua}) ";
+        impure_msg = "impure";
+        pure_msg = "pure";
       };
       direnv = {
         disabled = false;
         symbol = " ";
         style = bold p.purple;
-        format = "[$symbol$loaded$allowed]($style)";
-        loaded_msg = "";
-        unloaded_msg = "unloaded ";
-        allowed_msg = "";
-        not_allowed_msg = "blocked ";
-        denied_msg = "denied ";
+        format = "[\\($symbol$loaded/$allowed\\)](${bold p.purple}) ";
+        loaded_msg = "loaded";
+        unloaded_msg = "not loaded";
+        allowed_msg = "allowed";
+        not_allowed_msg = "not allowed";
       };
       container = {
         symbol = " ";
         style = bold p.green;
-        format = "[$symbol$name](${bold p.green}) ";
+        format = "[\\($symbol $name\\)](${bold p.green}) ";
       };
       cmd_duration = {
         min_time = 2000;
-        style = "${c.foreground-dim}";
-        format = "[󰔛 $duration]($style) ";
+        format = "[took $duration](${bold p.red}) ";
       };
       golang = segment p.aqua // {
         symbol = " ";
