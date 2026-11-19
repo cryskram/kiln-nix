@@ -40,6 +40,7 @@ let
     model = "opus";
     modelSettings."claude-opus-5-5".effortLevel = "medium";
     theme = "auto";
+    outputStyle = "sre-explain";
 
     attribution = {
       commit = "";
@@ -73,7 +74,9 @@ let
 in
 {
   programs.claude-code.enable = true;
-  home.packages = [ statusline ];
+  home.packages = [
+    statusline
+  ];
 
   # settings.json and CLAUDE.md are seeded once and then owned by Claude Code (/config, /model) and by you.
   home.activation.claudeSeedConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
@@ -89,4 +92,6 @@ in
 
   # Live link, not a store copy: LEARNINGS.md is append-only and shared with pi.
   home.file.".claude/skills/learnings".source = config.lib.file.mkOutOfStoreSymlink learnings;
+
+  home.file.".claude/output-styles/sre-explain.md".source = ./claude/output-styles/sre-explain.md;
 }

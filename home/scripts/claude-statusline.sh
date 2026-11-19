@@ -45,6 +45,16 @@ if [[ -n $root ]]; then
   ((del > 0)) && out+=" $(c "$red")-${del}${r}"
 fi
 
+# Kubernetes context; red when the name looks like prod.
+kcfg="${KUBECONFIG:-$HOME/.kube/config}"
+kctx=""
+[[ -r ${kcfg%%:*} ]] && kctx=$(awk '$1 == "current-context:" { print $2; exit }' "${kcfg%%:*}")
+if [[ -n $kctx ]]; then
+  kcol=$aqua
+  grep -qiE '(^|[-_./])prod(uction)?([-_./]|$)' <<<"$kctx" && kcol=$red
+  out+=" $(c "$kcol")k8s:${kctx}${r}"
+fi
+
 [[ -n ${IN_NIX_SHELL:-} ]] && out+=" $(c "$aqua")(nix ${IN_NIX_SHELL})${r}"
 [[ -n $model ]] && out+=" $(c "$yellow")${model}${r}"
 [[ -n $used ]] && out+=" $(c "$blue")ctx $(printf '%.0f' "$used")%${r}"
