@@ -2,6 +2,14 @@
 
 Reverse chronological. Newest on top.
 
+## 2026-11-20 — Hyprland workspaces are global, so the external display can't have its own "1" (decision) — `hyprland/workspaces`
+
+- What: workspace numbers belong to one monitor each; `SUPER+N` creates N on the focused monitor only if it doesn't exist, otherwise focus jumps to wherever N lives. `e+1`/`e-1` (Page Up/Down, `SUPER+U/I`) step through existing workspaces on all monitors and never create one (`Resolver.cpp:277`). User chose to leave it: "leave it".
+- Why/Context: the stock Dux binds behave this way; nothing is misconfigured. If revisited: per-monitor sets in `modules/hyprland/user.lua` (SUPER+N → focused monitor's Nth workspace, e.g. external 11–19; `hl.unbind` the stock key first or binds duplicate), or pinned ID ranges via workspace rules.
+- How/Apply: don't re-diagnose; offer Super+Tab (overview clicks create workspaces) as the workaround.
+
+Source: external-display workspace question 2026-11-20.
+
 ## 2026-11-19 — Alt+Tab previews: nothing off the shelf; custom switcher deferred (decision) — `hyprland/switcher`
 
 - What: hyprshell 4.10.9 has no window previews (upstream #26/#424/#477 open); Dux's Super+Tab overview has live `ScreencopyView` previews but no Enter handler (Esc or a click closes it, `HyprlandOverview.qml:197`). User declined a from-scratch switcher: "its fine, dont do it. lets see for the future".
