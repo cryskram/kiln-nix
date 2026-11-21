@@ -3,7 +3,7 @@
 These are compact global instructions appended to Pi's built-in system prompt. They apply in every Pi working directory; they do not replace Pi's default system prompt.
 
 - Use the shared Pi brain. Its cross-project contract is `~/.pi/agent/AGENTS.md`; its ownership map is `~/.pi/agent/brain/README.md`.
-- At the start of every new session/task, read the configured `learnings` skill's `SKILL.md` and full `LEARNINGS.md` before planning, answering, or touching code. The journal is shared evidence, not a reason to resist a clear new instruction.
+- At the start of every new session/task, read the configured `learnings` skill's `SKILL.md` and the full journal (`~/claude-vag-vault/resources/learnings.md`) before planning, answering, or touching code. The journal is shared evidence, not a reason to resist a clear new instruction.
 - For repository work, identify the current repository and follow its applicable `AGENTS.md` files before editing. Do not assume kiln-nix's Nix workflow applies to unrelated repositories.
 - Inspect before changing; prefer the smallest maintainable change; validate and report results honestly. Ask when an unresolved choice materially affects the outcome.
 - Prefer `codemode` for independent parallel tool calls (`Promise.allSettled`), fan-out searches/reads, and filtering large outputs before they reach context — batch in one script instead of sequential calls.

@@ -14,7 +14,7 @@ let
       5
     ];
 
-  learnings = "${config.home.homeDirectory}/kiln-nix/pi/skills/learnings";
+  vault = "~/claude-vag-vault";
 
   statusline = pkgs.writeShellApplication {
     name = "claude-statusline";
@@ -68,8 +68,10 @@ let
 
   context = pkgs.writeText "CLAUDE.md" ''
     - Never add Co-Authored-By trailers or "Generated with Claude Code" lines to commits or PRs.
-    - Journal: use the `learnings` skill (${learnings}/LEARNINGS.md). Read it at session start; append one entry per its SKILL.md whenever the user corrects you, states a preference, or you hit a non-obvious gotcha.
-    - Have a sense of humor: dry, quick, well-timed. A good line beats a forced one, and jokes never replace substance or bury bad news.
+    - Be genuinely funny, not just allowed to be: aim for a laugh in nearly every reply. Callbacks, deadpan asides, absurd analogies, mock-heroic narration of a dull task, gentle roasts of the bug or the tooling (never the user). Don't ration it and don't explain the joke. Substance still comes first; for prod, failures and destructive actions give the straight answer first and the quip after, never instead.
+    - Vault: `${vault}` is long-term memory across projects; each project's auto-memory already lives there (symlinked). Never bulk-load it: when you need history beyond auto-memory, read `${vault}/Home.md`, then `rg` for the one note you need.
+    - After a task that changed something, append 5-15 lines to `${vault}/projects/<p>/worklog/YYYY-MM-DD.md` (what changed, PR/commit links, decisions, what's open) and update `projects/<p>/open-items.md`; lasting choices get `decisions/NNNN-<slug>.md` (templates in `templates/`). Summaries only: no raw logs, no secrets. No project folder yet: create one and add its line to `projects.tsv`.
+    - Learnings: `${vault}/resources/learnings.md`. Never read it at session start. Append one entry (format at its top, newest first) when the user corrects you, states a preference, or you hit a non-obvious gotcha; `rg` it by tag before preference-sensitive work.
   '';
 in
 {
@@ -89,9 +91,6 @@ in
     seed ${pkgs.writeText "settings.json" (builtins.toJSON settings)} "$dir/settings.json"
     seed ${context} "$dir/CLAUDE.md"
   '';
-
-  # Live link, not a store copy: LEARNINGS.md is append-only and shared with pi.
-  home.file.".claude/skills/learnings".source = config.lib.file.mkOutOfStoreSymlink learnings;
 
   home.file.".claude/output-styles/sre-explain.md".source = ./claude/output-styles/sre-explain.md;
 }

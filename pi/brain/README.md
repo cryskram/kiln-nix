@@ -30,7 +30,7 @@ At the start of Pi work, use the `learnings` skill to read its instructions and 
 - Cross-project working principles: `pi/brain/AGENTS.md`.
 - Compact always-on Pi bootstrap and non-negotiables: `pi/brain/APPEND_SYSTEM.md`.
 - kiln-nix-specific architecture: repository-root `AGENTS.md` and `pi/context.md`.
-- Confirmed durable preferences and reusable discoveries: `pi/skills/learnings/LEARNINGS.md`.
+- Confirmed durable preferences and reusable discoveries: `~/claude-vag-vault/resources/learnings.md`.
 - Confirmed personal decision-style profile (when Vageesh supplies it): `pi/skills/vageesh/PROFILE.md`.
 
 All changes to this brain are made in this repository and flow through the declarative Nix configuration. Do not edit generated copies under `~/.pi` by hand.

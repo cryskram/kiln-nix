@@ -35,7 +35,7 @@ dev/{shared,templates,company}/                               # personal devenvs
 
 ## Pi conventions
 
-- **Memory**: `pi/skills/learnings/` is the shared journal (`SKILL.md` = instructions, `LEARNINGS.md` = data). Read at start, append on signal — `pi/brain/APPEND_SYSTEM.md` + global `AGENTS.md` enforce the protocol.
+- **Memory**: `pi/skills/learnings/SKILL.md` = journal instructions, `~/claude-vag-vault/resources/learnings.md` = data (private vault). Read at start, append on signal — `pi/brain/APPEND_SYSTEM.md` + global `AGENTS.md` enforce the protocol.
 - **Delegation**: `modules/pi/default.nix` explicitly enables inherited global context and skills for every built-in Pi subagent; the pi-subagents defaults otherwise omit them.
 - **Discovery**: Prefer `repo-understanding` for unfamiliar areas before coding; use `learnings` for preferences. `vageesh` is an evidence-only skill scaffold. Prompt templates (`pi/prompts/`) are intentionally empty — skills are the mechanism.
 - **Extensions**: `querion-sync.ts` (`/sync`) and `stash.ts` (`Alt+S` editor stash, `/stash`, `/stash-history`) are local; third-party are pinned in `pi/packages.nix` (withDeps pattern), including `pi-guard` — the permission gate whose bash/file/MCP policy lives in `modules/pi/guard.nix`. pi-guard matches tool rules by exact name and falls back to `ask` for anything unlisted (blocked, not prompted, in headless subagents), so its rule set enumerates every tool explicitly. Update pins via `scripts/update-pi-extensions.py`. `pi-lens` is a separate pin (`pkgs/pi-lens.nix`, npm tarball since the published package ships prebuilt dist) — LSP/lint/format feedback with 13 pi tools, all allowlisted in guard; its LSP/tool auto-install is disabled by `PI_LENS_DISABLE_*_INSTALL=1` because `nil` + `nixfmt` and the per-project devenv servers already provide what it needs.
@@ -52,7 +52,7 @@ scripts/update-pi-extensions.py --check
 
 ## When unsure, check in order
 
-1. `pi/skills/learnings/LEARNINGS.md` → prior decisions/preferences
+1. `~/claude-vag-vault/resources/learnings.md` → prior decisions/preferences
 2. `AGENTS.md` (+ `docs/decisions/*.md`) → architecture & policy
 3. `README.md` / `RICE.md` / `DEV_ENVIRONMENT.md` → spec & dev setup
 4. `modules/pi/` → how pi is wired

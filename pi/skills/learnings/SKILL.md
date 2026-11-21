@@ -5,7 +5,7 @@ description: Durable journal for Vageesh's preferences, project decisions, and r
 
 # Learnings — Journal Skill
 
-One journal, many sessions. This skill owns `LEARNINGS.md` in this same directory. You read it to recall, you append to it to remember. It is the single source of truth for "how Vageesh wants things done" + "what this repo has already learned."
+One journal, many sessions. This skill owns the journal at `~/claude-vag-vault/resources/learnings.md` (called `LEARNINGS.md` below). You read it to recall, you append to it to remember. It is the single source of truth for "how Vageesh wants things done" + "what this repo has already learned."
 
 ## When to use
 
@@ -19,7 +19,7 @@ Do not treat this as optional. The global Pi brain (`pi/brain/APPEND_SYSTEM.md` 
 
 ## The file
 
-`pi/skills/learnings/LEARNINGS.md` — append-only, reverse chronological (newest on top). Every entry follows the template. No walls of text. Aim for 2-4 lines of signal, not 20 lines of narration.
+`~/claude-vag-vault/resources/learnings.md` — append-only, reverse chronological (newest on top). Every entry follows the template. No walls of text. Aim for 2-4 lines of signal, not 20 lines of narration.
 
 ### Entry template
 

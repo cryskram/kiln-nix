@@ -12,6 +12,7 @@
     ./ssh.nix
     ./development.nix
     ./claude-code.nix
+    ./vault.nix
     ./applications.nix
     ./spicetify.nix
     ./neovim.nix
