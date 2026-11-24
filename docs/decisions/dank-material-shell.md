@@ -96,6 +96,15 @@ therefore moves anything the new dir lacks, before the seed runs.
   re-applies it on every activation (the plugin store can replace the file) while
   skipping once the file already handles the current shape. Drop both once
   upstream ships a fix: https://github.com/bernardopg/AiOverviewControl
+- **Patched Claude usage cache (temporary).** `get-claude-usage` runs under
+  `set -euo pipefail` and wrote `claude-usage-cache.json` non-atomically. A
+  truncated write (2026-11-20) left trailing junk; the `cached_at` read then
+  produced two lines, the arithmetic expansion failed, and bash dropped the whole
+  credentials block, so the live API call never ran and the bar showed 0% while
+  the local stats still looked fine. `patches/aioc-claude-cache-robust.patch`
+  validates `cached_at` and writes the cache via temp file + `mv`;
+  `home.activation.patchAiOverviewControlClaude` re-applies it like the opencode
+  one. If the bar shows 0% again, delete the cache first.
 - **Removed:** the `noctalia` flake input, `home/noctalia.nix`,
   `noctalia-plugins/opencode-quota/*.luau`, `theme/noctalia-*.json`, and
   the `noctalia msg …` keybinds (now `dms ipc call …`, keeping the fuzzel /

@@ -91,5 +91,15 @@ in
             || echo "AiOverviewControl: opencode adapter patch failed; upstream may have changed it" >&2
         fi
       '';
+
+      # A truncated usage cache once made the Claude provider skip its API call forever; see docs/decisions/dank-material-shell.md.
+      home.activation.patchAiOverviewControlClaude = ''
+        plugin="$HOME/.config/dms/plugins/aiOverviewControl"
+        script="$plugin/providers/get-claude-usage"
+        if [ -f "$script" ] && ! grep -q 'cache_ts" in' "$script"; then
+          ${pkgs.patch}/bin/patch --forward --silent -p1 -d "$plugin" < ${../patches/aioc-claude-cache-robust.patch} \
+            || echo "AiOverviewControl: claude usage patch failed; upstream may have changed it" >&2
+        fi
+      '';
     };
 }

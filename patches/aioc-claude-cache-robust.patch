@@ -1,0 +1,22 @@
+--- a/providers/get-claude-usage
++++ b/providers/get-claude-usage
+@@ -161,7 +161,8 @@
+     # Check if cached usage data is still fresh
+     USE_CACHE=false
+     if [ -f "$USAGE_CACHE" ]; then
+-        cache_ts=$(jq -r '.cached_at // 0' "$USAGE_CACHE" 2>/dev/null || echo 0)
++        cache_ts=$(jq -r '(.cached_at // 0) | floor' "$USAGE_CACHE" 2>/dev/null | head -1) || true
++        case "$cache_ts" in ''|*[!0-9]*) cache_ts=0 ;; esac
+         now_ts=$(date +%s)
+         age=$(( now_ts - cache_ts ))
+         if [ "$age" -ge 0 ] && [ "$age" -lt "$USAGE_CACHE_TTL" ] \
+@@ -187,7 +188,8 @@
+             if [ "$usage_status" = "200" ] \
+                 && jq -e '.five_hour | type == "object"' "$usage_body" >/dev/null 2>&1; then
+                 API_RESPONSE=$(cat "$usage_body")
+-                jq -n --argjson data "$API_RESPONSE" '{cached_at: (now | floor), data: $data}' > "$USAGE_CACHE" 2>/dev/null
++                jq -n --argjson data "$API_RESPONSE" '{cached_at: (now | floor), data: $data}' > "$USAGE_CACHE.$$" 2>/dev/null \
++                    && mv "$USAGE_CACHE.$$" "$USAGE_CACHE" || rm -f "$USAGE_CACHE.$$"
+             elif [ "$usage_status" = "401" ] || [ "$usage_status" = "403" ]; then
+                 # Credentials are genuinely invalid — stale data would mislead.
+                 USAGE_ERROR_KIND="authentication"
